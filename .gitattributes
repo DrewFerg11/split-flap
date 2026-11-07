@@ -1,0 +1,14 @@
+# Text files are stored and checked out with LF line endings (KiCad, Python, Markdown)
+* text=auto eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+
+# Large CAD binaries go through Git LFS
+*.step filter=lfs diff=lfs merge=lfs -text
+*.stp  filter=lfs diff=lfs merge=lfs -text
+*.f3d  filter=lfs diff=lfs merge=lfs -text
+*.f3z  filter=lfs diff=lfs merge=lfs -text
