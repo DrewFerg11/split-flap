@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "sfmb")(type "KiCad")(uri "${KIPRJMOD}/split-flap-module-board.kicad_sym")(options "")(descr "Split-flap module board symbols (+12V_CHAIN, +12V_FUSED, +12V_LOCAL)"))
+)

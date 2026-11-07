@@ -1,0 +1,36 @@
++12V_CHAIN               F1.1 J1.1 J2.1
++12V_FUSED               F1.2 Q1.3[D_3]
++12V_LOCAL               C1.1 C10.1 C2.1 C3.1 D1.1[A1_1] DZ1.1[K_1] J5.3 Q1.2[S_2] TP1.1[1_1] U1.2[VIN_2] U4.5[VM_5]
++3V3                     C11.1 C4.1 C5.1 C6.1 C8.1 J3.5 J4.5 J6.1 R10.1 R13.1 R9.1 TP2.1[1_1] U1.3[VOUT_3] U2.4[VDD_4] U3.8[VCC_8] U4.4[VREF_4]
+/DBG_RX                  J6.7 U2.10[PA3_10]
+/DBG_TX                  J6.6 U2.9[PA2_9]
+/ENC_A                   C12.1 R11.2 U2.7[PA0_7]
+/ENC_A_RAW               J3.3 J4.3 R11.1 R9.2
+/ENC_B                   C13.1 R12.2 U2.8[PA1_8]
+/ENC_B_RAW               J3.4 J4.4 R10.2 R12.1
+/ENUM_IN                 R4.2 R5.1 U2.1[PB7/PB8_1]
+/ENUM_IN_RAW             J1.5 R4.1
+/ENUM_OUT                R6.1 U2.2[PB9/PC14_2]
+/ENUM_OUT_RAW            J2.5 R6.2
+/HALL                    C14.1 R14.2 U2.12[PA5_12]
+/HALL_RAW                J5.1 R13.2 R14.1
+/ISEN                    R7.1 R8.1 U4.7[ISEN_7]
+/ISEN_ADC                C9.1 R8.2 TP5.1[1_1] U2.11[PA4_11]
+/LED                     R15.1 U2.3[PC15_3]
+/LED_A                   D2.2[A_2] R15.2
+/MOT_IN1                 U2.13[PA6_13] U4.3[IN1_3]
+/MOT_IN2                 U2.14[PA7_14] U4.2[IN2_2]
+/MOT_OUT1                J3.1 J4.1 U4.6[OUT1_6]
+/MOT_OUT2                J3.6 J4.6 U4.8[OUT2_8]
+/NRST                    C7.1 J6.4 U2.6[PF2_6]
+/Q1_GATE                 DZ1.2[A_2] Q1.1[G_1] R1.1
+/RS485_A                 J1.3 J2.3 R3.1 TP3.1[1_1] U3.6[A_6]
+/RS485_B                 J1.4 J2.4 JP1.2 TP4.1[1_1] U3.7[B_7]
+/RS485_DE                R2.1 U2.20[PB3/PB4/PB5/PB6_20] U3.2[~{RE}_2] U3.3[DE_3]
+/RS485_RX                U2.17[PA10/PA12_17] U3.1[RO_1]
+/RS485_TX                U2.16[PA9/PA11_16] U3.4[DI_4]
+/SWCLK                   J6.3 U2.19[PA14/PA15_19]
+/SWDIO                   J6.2 U2.18[PA13_18]
+/TERM_B                  JP1.1 R3.2
+GND                      C1.2 C10.2 C11.2 C12.2 C13.2 C14.2 C2.2 C3.2 C4.2 C5.2 C6.2 C7.2 C8.2 C9.2 D1.2[A2_2] D2.1[K_1] J1.2 J2.2 J3.2 J4.2 J5.2 J6.5 R1.2 R2.2 R5.2 R7.2 TP6.1[1_1] U1.1[GND_1] U2.5[VSS_5] U3.5[GND_5] U4.1[GND_1] U4.9[GND_9]
+unconnected-(U2-PA8{slash}PB0{slash}PB1{slash}PB2-Pad15) U2.15[PA8/PB0/PB1/PB2_15]

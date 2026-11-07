@@ -1,0 +1,23 @@
+# Local working files
+reference/
+
+# KiCad: per-user state, backups, caches, locks
+*.kicad_prl
+*-backups/
+fp-info-cache
+_autosave-*
+*.lck
+~*.lck
+\#auto_saved_files\#
+
+# PCB fab: unzipped gerbers (the order zip holds the same files)
+hardware/pcbs/*/fab/gerbers/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
