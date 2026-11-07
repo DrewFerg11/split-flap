@@ -11,7 +11,7 @@ _autosave-*
 \#auto_saved_files\#
 
 # PCB fab: unzipped gerbers (the order zip holds the same files)
-hardware/pcbs/*/fab/gerbers/
+pcb/*/fab/gerbers/
 
 # Python
 __pycache__/
