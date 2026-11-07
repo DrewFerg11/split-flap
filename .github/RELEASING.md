@@ -63,7 +63,8 @@ change list since the previous tag of the same component.
 ## What CI checks before publishing
 
 - Tag format, and the version shape for its type.
-- `build` and `publish` use the exact commit `check` gated; if the tag moved since, publish fails.
+- `build` and `publish` use the exact commit `check` gated. The tag is re-read from GitHub just
+  before and after the release is created; if it moved, publish fails (and deletes the release).
 - `release.toml` exists and names the same component; `RELEASE-NOTES.md` version = tag version.
 - Every asset and image exists, isn't empty, and isn't an unfetched LFS pointer.
 - ERC/DRC reports show 0 errors (DRC warnings allowed), 0 unconnected pads.

@@ -88,8 +88,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PRERELEASE: ${{ needs.check.outputs.prerelease }}
+          GATED_SHA: ${{ needs.check.outputs.sha }}
         run: |
+          # The commit the tag points at on GitHub now (peeled if annotated). Checked before and
+          # after creating the release: a tag moved mid-run must not keep a release built from
+          # a different commit.
+          tag_sha() { git ls-remote origin "refs/tags/$GITHUB_REF_NAME" "refs/tags/$GITHUB_REF_NAME^{}" | tail -1 | cut -f1; }
+          if [ "$(tag_sha)" != "$GATED_SHA" ]; then
+            echo "::error::tag $GITHUB_REF_NAME moved off the gated commit $GATED_SHA"; exit 1
+          fi
           gh release create "$GITHUB_REF_NAME" dist/assets/* \
             --verify-tag --latest=false \
             --title "$(cat dist/title.txt)" --notes-file dist/notes.md \
             $([ "$PRERELEASE" = true ] && echo --prerelease)
+          if [ "$(tag_sha)" != "$GATED_SHA" ]; then
+            gh release delete "$GITHUB_REF_NAME" --yes
+            echo "::error::tag $GITHUB_REF_NAME moved while publishing; release deleted"; exit 1
+          fi
