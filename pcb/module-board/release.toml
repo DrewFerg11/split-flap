@@ -1,0 +1,95 @@
+# Release manifest: what a pcb/module-board/vX.Y release ships. See .github/RELEASING.md.
+# Paths are relative to this folder. Update with fab/ whenever the board is rebuilt.
+name = "Split-flap module board"
+component = "module-board"
+asset_prefix = "split-flap-module-board"      # release files: <prefix>-v<version>-<name>
+notes = "RELEASE-NOTES.md"
+image_width = 280
+
+[[checks]]
+kind = "kicad-erc"
+path = "fab/erc-report.txt"
+
+[[checks]]
+kind = "kicad-drc"
+path = "fab/drc-report.txt"
+
+# ---- images (renders, then real photos when there are some: design/images/photo-*.jpg)
+[[images]]
+path = "fab/images/league-table-module-v0.1-3d.png"
+caption = "3D render"
+[[images]]
+path = "fab/images/league-table-module-v0.1-top.png"
+caption = "Top"
+[[images]]
+path = "fab/images/league-table-module-v0.1-bottom.png"
+caption = "Bottom"
+[[images]]
+path = "fab/images/league-table-module-v0.1-assembly-top.png"
+caption = "Top copper + references"
+[[images]]
+path = "fab/images/league-table-module-v0.1-copper-bottom.png"
+caption = "Bottom copper (ground plane)"
+[[images]]
+path = "design/images/bringup-meter-points.png"
+caption = "Power, debug and motor pinout"
+
+# ---- release files (committed; renamed on upload)
+[[assets]]
+path = "fab/league-table-module-v0.1-gerbers.zip"
+name = "gerbers.zip"
+description = "**Upload this to JLCPCB**: Gerbers + Excellon drill"
+[[assets]]
+path = "fab/league-table-module-v0.1-bom-jlc.csv"
+name = "bom-jlc.csv"
+description = "JLC assembly BOM (LCSC part numbers)"
+[[assets]]
+path = "fab/league-table-module-v0.1-cpl-jlc.csv"
+name = "cpl-jlc.csv"
+description = "JLC placement file (rotations corrected)"
+[[assets]]
+path = "fab/league-table-module-v0.1-hand-solder.csv"
+name = "hand-solder.csv"
+description = "Parts JLC doesn't place: order from LCSC, solder yourself"
+[[assets]]
+path = "split-flap-module-board-schematic.pdf"
+name = "schematic.pdf"
+description = "Schematic"
+[[assets]]
+path = "fab/league-table-module-v0.1-layers.pdf"
+name = "layers.pdf"
+description = "Copper, silk and fab layers, one per page"
+[[assets]]
+path = "fab/league-table-module-v0.1.step"
+name = "board.step"
+description = "3D model for enclosure fit checks"
+
+[specs]
+"Size" = "32 × 54 mm body, 39.6 × 54 mm with connector tabs"
+"Layers" = "2 (B.Cu ground plane), 1.6 mm, HASL"
+"MCU" = "STM32G031F8P6"
+"Motor" = "12 V N20 encoder gearmotor, DRV8870 driver (0.33 Ω current sense)"
+"Homing" = "A3144 hall sensor (JST PH 3-pin, dowjames v5.1 pinout)"
+"Bus" = "RS-485, chained board-to-board on 5-pin right-angle headers"
+"Parts" = "24 BOM lines, 41 placed by JLC, 1 hand-soldered (C1)"
+
+[order.settings]
+"Fab" = "JLCPCB"
+"Layers / thickness" = "2 / 1.6 mm"
+"Surface finish" = "HASL"
+"Assembly" = "Economic PCBA, top side"
+"Upload" = "`gerbers.zip`, then `bom-jlc.csv` + `cpl-jlc.csv`"
+"Hand-solder" = "C1 from LCSC (C3151830), see `hand-solder.csv`"
+
+[order]
+steps = [
+  "Upload `gerbers.zip`, pick the settings above, and enable PCB assembly.",
+  "Add `bom-jlc.csv` and `cpl-jlc.csv`.",
+  "In the placement preview, check pin 1 / polarity of U1–U4, Q1, D1, D2 and DZ1; J1 pins point past the right edge, J2's opening past the left.",
+  "Order C1 from LCSC separately and solder it yourself.",
+]
+
+[links]
+"Design notes" = "design/DESIGN-1.md"
+"Board README" = "README.md"
+"Fab notes" = "fab/README.md"
