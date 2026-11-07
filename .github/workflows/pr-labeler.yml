@@ -1,0 +1,84 @@
+# Based on SFE's plain-English title labeler, with Conventional Commit support.
+# Labels are additive: title edits never remove labels applied by a person.
+# pull_request_target supports forks; never check out or execute PR code here.
+name: CI / Labeler
+
+on:
+  pull_request_target:
+    # Retry on pushes too; the script fetches current metadata instead of stale event titles.
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  label:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Apply labels from PR title
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // Read current metadata so queued events cannot apply stale title labels.
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: context.issue.number,
+            });
+            if (pr.state !== 'open') return;
+
+            const title = (pr.title || '').trim();
+            const types = {
+              feat: 'enhancement', fix: 'bug', docs: 'documentation',
+              build: 'build', ci: 'ci', chore: 'chore', style: 'chore',
+              refactor: 'refactor', perf: 'performance', test: 'tests',
+              revert: 'revert', deps: 'dependencies',
+            };
+            const rules = [
+              ['bug', /^(fix|resolve|correct|repair)\b/i],
+              ['enhancement', /^(add|implement|support|introduce|allow|enable)\b/i],
+              ['documentation', /^(document|docs?|readme)\b/i],
+              ['ci', /^(ci|release|publish|build|derive|gate|pin)\b/i],
+              ['dependencies', /^(deps|dependencies|bump|update dependencies)\b/i],
+              ['refactor', /^refactor\b/i],
+              ['performance', /^(perf|optimize|optimise)\b/i],
+              ['tests', /^(test|tests)\b/i],
+              ['revert', /^revert\b/i],
+              ['chore', /^(chore|style|cleanup)\b/i],
+            ];
+            const conventional = title.match(/^(\w+)(?:\(([^)]*)\))?(!)?:\s*/);
+            let primary;
+            if (conventional) {
+              const scope = (conventional[2] || '').toLowerCase();
+              primary = ['deps', 'dependencies'].includes(scope)
+                ? 'dependencies'
+                : types[conventional[1].toLowerCase()];
+            }
+            // A colon alone does not make a title a recognized Conventional Commit.
+            if (!primary) {
+              primary = rules.find(([, pattern]) => pattern.test(title))?.[0];
+            }
+            if (!primary) core.info('No title label rule matched the current PR title.');
+
+            const labels = [];
+            if (primary) labels.push(primary);
+            if (conventional?.[3] || /^BREAKING[ -]CHANGE:/mi.test(pr.body || '')) {
+              labels.push('breaking');
+            }
+            const existing = new Set(pr.labels.map(label => label.name));
+            const toAdd = labels.filter(label => !existing.has(label));
+            if (!toAdd.length) {
+              core.info('No new labels to apply.');
+              return;
+            }
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: pr.number,
+              labels: toAdd,
+            });
+            core.info(`Added labels: ${toAdd.join(', ')}`);
