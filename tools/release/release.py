@@ -1,6 +1,6 @@
 """Release tool: one script for the local preview and for CI (.github/workflows/release.yml).
 
-    python tools/release/release.py preview pcb/module-board/v0.1     # check + render notes, no tag needed
+    python tools/release/release.py preview pcb/module-board/v0.1     # check (+ fw build) + render notes, no tag needed
     python tools/release/release.py check   <tag> [--github-output]  # gates only
     python tools/release/release.py build   <tag>                    # firmware: run PlatformIO, collect binaries
     python tools/release/release.py package <tag> [--out dist]       # assets + SHA256SUMS + notes.md
@@ -163,7 +163,8 @@ def build(t, d, man):
         raise Fail(f"unsupported build system {b.get('system')!r}")
     proj = os.path.join(d, b.get("project", "."))
     out = os.path.join(ROOT, "dist", "build")
-    os.makedirs(out, exist_ok=True)
+    shutil.rmtree(out, ignore_errors=True)          # never package binaries from an earlier build
+    os.makedirs(out)
     for env in b["envs"]:
         r = subprocess.run(["pio", "run", "-d", proj, "-e", env])
         if r.returncode:
@@ -306,6 +307,8 @@ def main():
         elif a.cmd == "build":
             build(t, d, man)
         else:
+            if a.cmd == "preview" and t["type"] in BUILT_IN_CI:
+                build(t, d, man)            # preview shows the same binaries CI would attach
             files = collect(t, d, man, a.out)
             sha = git("rev-parse", "HEAD")
             md = render(t, d, man, front, sections, files, sha, local)

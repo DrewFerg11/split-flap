@@ -45,8 +45,9 @@ change list since the previous tag of the same component.
    them. For a PCB: ERC/DRC reports in `fab/` at 0 errors.
 2. **Update** `release.toml` if the file list changed, and write `RELEASE-NOTES.md` with the
    new version.
-3. **Preview**: `python tools/release/release.py preview <tag>` runs every gate and writes
-   `dist/notes.md` + `dist/assets/` exactly as the release will get them (links point at HEAD).
+3. **Preview**: `python tools/release/release.py preview <tag>` runs every gate (and, for
+   `fw`/`app`, a fresh PlatformIO build) and writes `dist/notes.md` + `dist/assets/` exactly as
+   the release will get them (links point at HEAD).
 4. **Merge** to `main` through a PR.
 5. **Tag** the merge commit on `main` and push the tag:
    ```
