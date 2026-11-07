@@ -8,6 +8,7 @@
   fab/<board>.step         3D model for the enclosure check (the enclosure fit check in Fusion)
   fab/images/<board>-{top,bottom,3d}.png   renders
   fab/<board>-layers.pdf   copper/silk/fab prints;  ../<board>-schematic.pdf refreshed
+  fab/<board>-ibom.html    interactive BOM (ibom.py)
 
 Rotations/positions go through jlc_cpl.py (JLC model corrections + THT centring); check every
 part in JLC's placement preview before paying (the most common error).
@@ -121,6 +122,7 @@ run("pcb", "export", "pdf", "--output", os.path.join(FAB, NAME + "-layers.pdf"),
     "--layers", "F.Cu,B.Cu,F.Silkscreen,B.Silkscreen,F.Fab,Edge.Cuts", "--common-layers", "Edge.Cuts",
     "--include-border-title", PCB)
 run("sch", "export", "pdf", "--output", os.path.join(PROJ, NAME + "-schematic.pdf"), SCH)
+subprocess.run([sys.executable, os.path.join(HERE, "ibom.py")], check=True)
 
 print("fab outputs in", FAB)
 print("BOM lines:", len(groups), " placed parts:", len(cpl), " hand-solder:", sorted(r for r, _, _ in hand),
