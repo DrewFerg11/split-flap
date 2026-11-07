@@ -1,6 +1,6 @@
 # Contributor License Agreement
 
-**Draft, not reviewed by a lawyer.**
+Version 1.0
 
 This agreement is between you ("you") and Drew Ferguson ("Drew") for contributions to the
 Split-Flap Display project at <https://github.com/DrewFerg11/split-flap> (the "Project").
@@ -28,6 +28,14 @@ royalty-free, irrevocable license to:
 - sublicense these rights; and
 - release it, alone or as part of the Project, under any other license terms, including
   commercial terms.
+
+This covers only your own Contribution. Third-party material in it keeps its own license
+(see section 5).
+
+**Why this is one-sided:** Drew sells kits, boards, and displays, and he can't include your
+work in them without these rights. You still have the same rights to the whole Project as
+everyone else under its public license, and you keep full rights to your own Contribution
+(section 1).
 
 ## 4. Patents
 

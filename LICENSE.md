@@ -2,12 +2,14 @@
 
 Split-Flap Display
 Copyright © 2026 Drew Ferguson (DrewFerg11 / DrewFergDesigns)
+Contributions are copyright their authors and are licensed to the project under the
+[Contributor License Agreement](.github/CLA.md).
 
-Except where noted in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md), everything in this
+Except where noted in [THIRD-PARTY-NOTICES.md](LICENSES/THIRD-PARTY-NOTICES.md), everything in this
 repository (firmware, software, 3D models and CAD, PCB designs, documentation, and
 artwork) is licensed under the
 **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License**
-(CC BY-NC-SA 4.0). Full legal text: [LICENSE-CC-BY-NC-SA-4.0.txt](LICENSE-CC-BY-NC-SA-4.0.txt)
+(CC BY-NC-SA 4.0). Full legal text: [LICENSES/CC-BY-NC-SA-4.0.txt](LICENSES/CC-BY-NC-SA-4.0.txt)
 or <https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode>.
 
 SPDX-License-Identifier: CC-BY-NC-SA-4.0
@@ -34,8 +36,8 @@ Credit: **Split-Flap Display by Drew Ferguson (DrewFerg11)**,
 
 ## Additional permissions
 
-Drew Ferguson grants these permissions in addition to CC BY-NC-SA 4.0. They don't modify
-that license, and they apply only to material Drew owns.
+Drew Ferguson grants these permissions in addition to CC BY-NC-SA 4.0. They are a separate
+arrangement (Section 7(b) of that license) and don't modify it.
 
 1. **Fabrication for your own build.** You may pay a PCB manufacturer, assembler, or
    3D-printing service to produce parts for your own noncommercial build. The
@@ -48,6 +50,14 @@ that license, and they apply only to material Drew owns.
    as MakerWorld points) or voluntary tips for a noncommercial remix you publish
    is not commercial use.
 
+- **Who gets them:** everyone who receives this material, whether directly from this
+  repository or through someone else's copy or remix.
+- **What they cover:** Drew's own material and contributions made to this project under the
+  [CLA](.github/CLA.md). They don't cover changes someone else adds in their own remix; that
+  author decides what to allow for their part.
+- When you share this material or a remix, include this file or link to it, so others
+  can find these permissions.
+
 ## Commercial use
 
 For any other commercial use, including business use, kits, boards, prints, or finished
@@ -57,7 +67,7 @@ displays, ask first by opening an issue at
 ## Acknowledgements
 
 This is an original design. It was informed by measurements and ideas from other
-split-flap projects, including [Adam G Makes](https://github.com/adamgmakes/SplitFlapDisplay)
+split-flap projects, including [Adam G Makes](https://github.com/adamgmakes/SplitFlapDisplay),
 [Morgan Manly](https://github.com/ManlyMorgan/Split-Flap-Display), and dowjames'
 SplitFlap PCB v5.1 (board chaining and enclosure mounting). No files from those
 projects are included.

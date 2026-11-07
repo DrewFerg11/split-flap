@@ -5,7 +5,7 @@ documentation, and builds for other leagues.
 
 ## Before your first pull request
 
-This project is free for noncommercial use (see [LICENSE.md](LICENSE.md)), and Drew Ferguson
+This project is free for noncommercial use (see [LICENSE.md](../LICENSE.md)), and Drew Ferguson
 reserves the right to sell kits, boards, and displays. To include your work in those
 products, he needs permission from you, so **contributors sign the
 [Contributor License Agreement](CLA.md)**.
