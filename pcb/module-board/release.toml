@@ -77,14 +77,6 @@ description = "3D model for enclosure fit checks"
 "Bus" = "RS-485, chained board-to-board on 5-pin right-angle headers"
 "Parts" = "24 BOM lines, 41 placed by JLC, 1 hand-soldered (C1)"
 
-[order.settings]
-"Fab" = "JLCPCB"
-"Layers / thickness" = "2 / 1.6 mm"
-"Surface finish" = "HASL"
-"Assembly" = "Economic PCBA, top side"
-"Upload" = "`gerbers.zip`, then `bom-jlc.csv` + `cpl-jlc.csv`"
-"Hand-solder" = "C1 from LCSC (C3151830), see `hand-solder.csv`"
-
 [order]
 steps = [
   "Upload `gerbers.zip`, pick the settings above, and enable PCB assembly.",
@@ -92,6 +84,14 @@ steps = [
   "In the placement preview, check pin 1 / polarity of U1–U4, Q1, D1, D2 and DZ1; J1 pins point past the right edge, J2's opening past the left.",
   "Order C1 from LCSC separately and solder it yourself.",
 ]
+
+[order.settings]
+"Fab" = "JLCPCB"
+"Layers / thickness" = "2 / 1.6 mm"
+"Surface finish" = "HASL"
+"Assembly" = "Economic PCBA, top side"
+"Upload" = "`gerbers.zip`, then `bom-jlc.csv` + `cpl-jlc.csv`"
+"Hand-solder" = "C1 from LCSC (C3151830), see `hand-solder.csv`"
 
 [links]
 "Design notes" = "design/DESIGN-1.md"
