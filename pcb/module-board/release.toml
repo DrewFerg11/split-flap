@@ -52,6 +52,10 @@ path = "fab/league-table-module-v0.1-hand-solder.csv"
 name = "hand-solder.csv"
 description = "Parts JLC doesn't place: order from LCSC, solder yourself"
 [[assets]]
+path = "fab/split-flap-module-board-ibom.html"
+name = "ibom.html"
+description = "Interactive BOM: download and open in a browser to find each part on the board"
+[[assets]]
 path = "split-flap-module-board-schematic.pdf"
 name = "schematic.pdf"
 description = "Schematic"
