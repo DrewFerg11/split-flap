@@ -5,6 +5,7 @@ name: CI / Labeler
 
 on:
   pull_request_target:
+    # Retry on pushes too; the script fetches current metadata instead of stale event titles.
     types: [opened, edited, reopened, synchronize]
 
 permissions:
@@ -57,9 +58,12 @@ jobs:
               primary = ['deps', 'dependencies'].includes(scope)
                 ? 'dependencies'
                 : types[conventional[1].toLowerCase()];
-            } else {
+            }
+            // A colon alone does not make a title a recognized Conventional Commit.
+            if (!primary) {
               primary = rules.find(([, pattern]) => pattern.test(title))?.[0];
             }
+            if (!primary) core.info('No title label rule matched the current PR title.');
 
             const labels = [];
             if (primary) labels.push(primary);
