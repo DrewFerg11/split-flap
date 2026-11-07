@@ -14,7 +14,7 @@ W, H = 32.0, 54.0
 TXT, THK, GAP = 0.8, 0.12, 0.12
 # main parts whose automatic spot was ambiguous (Drew, 2026-10-15): (x, y, rotation), board mm
 PINNED = {
-    "U2": (11.5, 31.0, 0),       # MCU: centred under the chip
+    "U2": (11.5, 31.0, 0),      # MCU: centred under the chip
     "U3": (5.6, 19.0, 90),       # RS-485: left of the chip, clear of J2's overhang
     "U1": (26.5, 29.5, 0),       # 3.3 V regulator: above it, under D1
     "U4": (24.8, 36.7, 0),       # motor driver: between U1 and the chip
@@ -140,8 +140,8 @@ def main():
         label(name, 5.2, 4.0 + 2.54 * k, 0.8)
         label(name, 26.8, 4.0 + 2.54 * k, 0.8)
     label("JP1 = 120R TERM, BENCH ONLY", 16.5, 21.4, 0.8)
-    label("LEAGUE-TABLE MODULE", 17.0, 24.6, 1.0)
-    label("v0.1  2026-10", 17.0, 26.4, 0.8)
+    label("SPLIT-FLAP MODULE", 17.0, 24.6, 1.0)
+    label("v0.1 2026-10", 17.0, 26.4, 0.8)
     label("3V3 DIO CLK RST GND TX RX", 4.6, 25.6, 0.8, 90)
     label("M1 GND A B 3V3 M2", 4.6, 43.35, 0.8, 90)
     label("M1 GND A B 3V3 M2", 25.25, 51.6, 0.8)
