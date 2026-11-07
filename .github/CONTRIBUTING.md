@@ -13,6 +13,8 @@ products, he needs permission from you, so **contributors sign the
 - You keep the copyright to your contribution.
 - Your contribution is published under this project's license, like everything else here.
 - You also give Drew the right to use it commercially and to change the project's license.
+- In return, Drew promises your contribution stays publicly available under this license or
+  one that gives the public at least the same rights. It can't be locked away.
 
 The CLA Assistant bot asks you to sign the first time you open a pull request. It takes one
 click with your GitHub account. Pull requests can't be merged until it's signed.

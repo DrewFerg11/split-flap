@@ -30,21 +30,29 @@ royalty-free, irrevocable license to:
   commercial terms.
 
 This covers only your own Contribution. Third-party material in it keeps its own license
-(see section 5).
+(see section 6).
 
 **Why this is one-sided:** Drew sells kits, boards, and displays, and he can't include your
 work in them without these rights. You still have the same rights to the whole Project as
 everyone else under its public license, and you keep full rights to your own Contribution
 (section 1).
 
-## 4. Patents
+## 4. Drew's promise to keep your Contribution public
+
+Drew will keep your Contribution available to the public, as part of the Project, under
+the Project's public license (currently CC BY-NC-SA 4.0) or under a license that gives the
+public at least the same rights. He may also license it on other terms, including
+commercial terms (section 3), but he won't make it available only on more restrictive
+terms. This promise covers your Contribution, not Drew's own work.
+
+## 5. Patents
 
 You grant Drew, and anyone receiving the Project or products from Drew, a perpetual,
 worldwide, non-exclusive, royalty-free, irrevocable license under any patent claims you
 can license that your Contribution would infringe, alone or combined with the Project,
 to make, use, sell, offer for sale, import, and otherwise transfer it.
 
-## 5. What you confirm
+## 6. What you confirm
 
 - The Contribution is your original work, or you have the right to submit it under this
   agreement. You will identify any third-party material and its license in your
@@ -53,12 +61,12 @@ to make, use, sell, offer for sale, import, and otherwise transfer it.
   permission to make this agreement.
 - You are not knowingly including anything that infringes someone else's rights.
 
-## 6. No obligations
+## 7. No obligations
 
 Drew doesn't have to use your Contribution. You provide it "as is", without warranties,
 and you have no obligation to support it.
 
-## 7. Credit
+## 8. Credit
 
 Drew will keep the Project's Git history, which records your authorship. No other
 payment or credit is owed.
