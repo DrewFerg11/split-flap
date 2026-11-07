@@ -14,7 +14,7 @@ W, H = 32.0, 54.0
 TXT, THK, GAP = 0.8, 0.12, 0.12
 # main parts whose automatic spot was ambiguous (Drew, 2026-10-15): (x, y, rotation), board mm
 PINNED = {
-    "U2": (11.5, 31.0, 0),      # MCU: centred under the chip
+    "U2": (11.5, 31.0, 0),       # MCU: centred under the chip
     "U3": (5.6, 19.0, 90),       # RS-485: left of the chip, clear of J2's overhang
     "U1": (26.5, 29.5, 0),       # 3.3 V regulator: above it, under D1
     "U4": (24.8, 36.7, 0),       # motor driver: between U1 and the chip
