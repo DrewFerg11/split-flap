@@ -23,6 +23,7 @@ jobs:
       build: ${{ steps.check.outputs.build }}
       dir: ${{ steps.check.outputs.dir }}
       prerelease: ${{ steps.check.outputs.prerelease }}
+      sha: ${{ steps.check.outputs.sha }}    # build + publish use exactly the commit that passed the gates
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,6 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.check.outputs.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -69,6 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.check.outputs.sha }}
           fetch-depth: 0
           lfs: true
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -79,6 +82,7 @@ jobs:
         with:
           name: firmware
           path: dist/build/
+      # package re-runs every gate, including "tag still points at this commit"
       - run: python tools/release/release.py package "$GITHUB_REF_NAME" --out dist
       - name: Publish
         env:

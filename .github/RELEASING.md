@@ -14,7 +14,9 @@ which waits for the admin's approval and then publishes the GitHub release.
 | `fw` | `firmware/<target>/` | `vX.Y.Z` | **built by CI** from the tagged source | `fw/module/v1.4.2` |
 | `app` | `applications/<app>/` | `vX.Y.Z` | **built by CI** from the tagged source | `app/premier-league-table/v1.0.0` |
 
-- `-rc.N` suffix (e.g. `fw/module/v1.5.0-rc.1`) and any `v0.x` publish as **pre-releases**.
+- Any `v0.x` publishes as a **pre-release**. `fw`/`app` can also add `-rc.N`
+  (`fw/module/v1.5.0-rc.1`, also a pre-release); `pcb`/`hw` can't, since each version is a
+  physical revision.
 - No release is ever marked GitHub "Latest" (one per repo can't serve several components).
   Firmware downloads go through the web flasher's own index.
 - Never create a bare `pcb/module-board` tag: git can't hold it next to `pcb/module-board/v0.1`.
@@ -61,6 +63,7 @@ change list since the previous tag of the same component.
 ## What CI checks before publishing
 
 - Tag format, and the version shape for its type.
+- `build` and `publish` use the exact commit `check` gated; if the tag moved since, publish fails.
 - `release.toml` exists and names the same component; `RELEASE-NOTES.md` version = tag version.
 - Every asset and image exists, isn't empty, and isn't an unfetched LFS pointer.
 - ERC/DRC reports show 0 errors (DRC warnings allowed), 0 unconnected pads.

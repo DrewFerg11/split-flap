@@ -7,7 +7,7 @@
     (--local on build/package skips the tag/main gates, for testing before a tag exists)
 
 Tags are <type>/<component>/v<version> (see .github/RELEASING.md):
-    pcb/<board>/vX.Y   hw/<part>/vX.Y   fw/<target>/vX.Y.Z   app/<application>/vX.Y.Z   (+ optional -rc.N)
+    pcb/<board>/vX.Y   hw/<part>/vX.Y   fw/<target>/vX.Y.Z[-rc.N]   app/<application>/vX.Y.Z[-rc.N]
 
 Each component has <folder>/<component>/release.toml (what to ship) and RELEASE-NOTES.md (this
 release's version, status and prose). Standard library only (Python 3.11+).
@@ -35,10 +35,12 @@ def git(*args):
 def parse_tag(tag):
     m = TAG_RE.match(tag)
     if not m:
-        raise Fail(f"tag {tag!r} is not <pcb|hw|fw|app>/<component>/vX.Y[.Z][-rc.N]")
+        raise Fail(f"tag {tag!r} is not <pcb|hw>/<component>/vX.Y or <fw|app>/<component>/vX.Y.Z[-rc.N]")
     kind, comp, major, minor, patch, rc = m.groups()
     if kind in ("pcb", "hw") and patch is not None:
         raise Fail(f"{kind} versions are vMAJOR.MINOR (matching the silkscreen/part label), got {tag}")
+    if kind in ("pcb", "hw") and rc is not None:
+        raise Fail(f"{kind} releases are physical revisions: no -rc.N (use a v0.x pre-release), got {tag}")
     if kind in ("fw", "app") and patch is None:
         raise Fail(f"{kind} versions are full semver vMAJOR.MINOR.PATCH, got {tag}")
     version = tag.rsplit("/v", 1)[1]
@@ -298,7 +300,7 @@ def main():
         local = a.cmd == "preview" or a.local
         gates(t, d, man, front, local)
         if a.cmd == "check":
-            info = {**t, "build": t["type"] in BUILT_IN_CI, "title": f"{man['name']} v{t['version']}"}
+            info = {**t, "sha": git("rev-parse", "HEAD"), "build": t["type"] in BUILT_IN_CI, "title": f"{man['name']} v{t['version']}"}
             print(json.dumps(info, indent=2))
             if a.github_output:
                 with open(os.environ["GITHUB_OUTPUT"], "a") as f:
