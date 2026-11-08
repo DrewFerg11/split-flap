@@ -45,6 +45,7 @@ deployment paths. Use `npm run preview` to inspect the exported site.
   Npm hooks generate an ignored local ES module before dev, check, build, and
   demo tests. Restart the dev server after regenerating the application JSON.
   Changes under that application's `flap-sets/` directory trigger site deployment.
+  CI also checks that the committed JSON matches its Markdown source before building.
 - `npm run test:demo` checks drum traversal, interruptions, unknown targets,
   a board larger than 20 rows, and every Premier League view in both seasons
   and clock modes. The engine has no league-specific names or row counts.
