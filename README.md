@@ -1,6 +1,8 @@
 # split-flap
 3D-printable split-flap modules, electronics, and firmware
 
+[Documentation and demos](https://drewferg11.github.io/split-flap/) (site under development).
+
 ## Layout
 
 | Folder | What | Release tag |

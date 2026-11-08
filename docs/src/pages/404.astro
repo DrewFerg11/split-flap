@@ -1,0 +1,13 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage frontmatter={{
+  title: 'This flap is blank.',
+  description: 'The page could not be found.',
+  template: 'splash',
+  head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' } }],
+}}>
+  <p>This page may have moved, or its branch preview may have been removed.</p>
+  <p><a href={import.meta.env.BASE_URL}>Return to the home page →</a></p>
+</StarlightPage>
