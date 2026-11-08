@@ -12,7 +12,7 @@ which waits for the admin's approval and then publishes the GitHub release.
 | `pcb` | `pcb/<board>/` | `vX.Y` (matches the silkscreen) | built locally, committed | `pcb/module-board/v0.1` |
 | `hw` | `hardware/<part>/` | `vX.Y` | built locally, committed (may link to MakerWorld) | `hw/digit-module/v1.0` |
 | `fw` | `firmware/<target>/` | `vX.Y.Z` | **built by CI** from the tagged source | `fw/module/v1.4.2` |
-| `app` | `applications/<app>/` | `vX.Y.Z` | **built by CI** from the tagged source | `app/premier-league-table/v1.0.0` |
+| `app` | `applications/<app>/` | `vX.Y.Z` | **built by CI** from the tagged source | `app/premier-league/v1.0.0` |
 
 - Any `v0.x` publishes as a **pre-release**. `fw`/`app` can also add `-rc.N`
   (`fw/module/v1.5.0-rc.1`, also a pre-release); `pcb`/`hw` can't, since each version is a

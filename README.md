@@ -8,7 +8,7 @@
 | [`pcb/`](pcb/) | KiCad boards; fab packages built locally and committed | `pcb/<board>/vX.Y` |
 | [`hardware/`](hardware/) | 3D-printable and physical parts | `hw/<part>/vX.Y` |
 | [`firmware/`](firmware/) | Shared module and controller firmware; built by CI | `fw/<target>/vX.Y.Z` |
-| [`applications/`](applications/) | Displays built from the above (e.g. Premier League table) | `app/<application>/vX.Y.Z` |
+| [`applications/`](applications/) | Displays built from the above (e.g. Premier League) | `app/<application>/vX.Y.Z` |
 
 ## License
 
