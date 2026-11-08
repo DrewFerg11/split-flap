@@ -62,8 +62,7 @@ Plan: draw the mechanism with flap count as a parameter. Print 2–3 variants (e
 
 * Flap geometry (count, thickness, pivot radius → drum diameter), drum, axle, motor mount,
   sensor mount, worked out on paper/in a calc sheet before CAD.
-* Inputs only from purchased-part datasheets and our own measurements
-  ([`hardware/design-ownership.md`](../../hardware/design-ownership.md)).
+* Inputs only from purchased-part datasheets and our own measurements.
 * Start the design log.
 
 ## Phase 2 — digit module prototype

@@ -73,7 +73,7 @@ description = "3D model for enclosure fit checks"
 "Layers" = "2 (B.Cu ground plane), 1.6 mm, HASL"
 "MCU" = "STM32G031F8P6"
 "Motor" = "12 V N20 encoder gearmotor, DRV8870 driver (0.33 Ω current sense)"
-"Homing" = "A3144 hall sensor (JST PH 3-pin, dowjames v5.1 pinout)"
+"Homing" = "A3144 hall sensor (JST PH 3-pin, SplitFlap v5.1-compatible pinout)"
 "Bus" = "RS-485, chained board-to-board on 5-pin right-angle headers"
 "Parts" = "24 BOM lines, 41 placed by JLC, 1 hand-soldered (C1)"
 

@@ -13,7 +13,7 @@ fixed at 20: the EPL build is likely 21 (a header row), and the display is desig
 | Module board | v0.1 ordered and brought up (power, SWD, motor, encoder, hall, RS-485) | [`pcb/module-board`](../../pcb/module-board/) |
 | Module firmware | fixed bus addresses, homing, flap moves, calibration; ENUM auto-addressing not yet | [`firmware/module`](../../firmware/module/) |
 | Controller | ESP32 serial bench console; Wi-Fi, web UI, Home Assistant and this app's firmware are planned (issues #10-#15) | [`firmware/controller`](../../firmware/controller/) |
-| Mechanics | 52-flap digit module built and printed; name module designed, not yet printed. The flap print files still use the old numbering (home = slot 51) and need regenerating for the planned sets | CAD, scripts and print files not migrated yet (step 4, with the mechanics handoff notes) |
+| Mechanics | 52-flap digit module built and printed; name module designed, not yet printed. The flap print files still use the old numbering (home = slot 51) and need regenerating for the planned sets | `hardware/modules/`, kept local (git-ignored) until 3D-model distribution is decided |
 | Flap sets | the planned 52-flap name, digit and header drums | [`flap-sets/`](flap-sets/) |
 | Rail (trunk up the side) | research, leaning to idea A | [`hardware/rail`](../../hardware/rail/) |
 
@@ -23,7 +23,6 @@ fixed at 20: the EPL build is likely 21 (a header row), and the display is desig
 | [plan.md](plan.md) | phased plan for option 2, open questions |
 | [flap-sets/flap-sets.md](flap-sets/flap-sets.md) | what goes on every flap of every drum (the single list) |
 | [other-leagues.md](other-leagues.md) | which other leagues the same hardware can show, and where each breaks |
-| [`hardware/design-ownership.md`](../../hardware/design-ownership.md) | the from-scratch rules for the module design |
 | [`hardware/rail`](../../hardware/rail/) | the main rail / trunk on the right: options, current, leaning |
 | [`firmware/controller/wiring`](../../firmware/controller/wiring/) | bench wiring: controller + modules on one RS-485 bus |
 
@@ -36,10 +35,8 @@ encoder, both drums have 52 flaps, and the module board exists. Paths written as
 
 ## Concept (2026-10-08)
 
-This display is built on a **new module designed from scratch**: Drew's own design, not a
-modification of the Morgan Manly enclosure that earlier work derives from. See
-[`hardware/design-ownership.md`](../../hardware/design-ownership.md) for what "from scratch" means
-in practice, and [plan.md](plan.md) for the build order.
+This display is built on a **new module designed from scratch** (Drew's own design). See
+[plan.md](plan.md) for the build order.
 
 The requirements in the original product brief (`docs/product-brief.md`: single 12 V rail,
 side bus, ≤ 6 ft tall, motor inside the drum, cheap motors, better homing, row-level boards)
@@ -123,16 +120,16 @@ Not decided yet; open questions are being worked through before the first protot
 * **One ESP32 is the brain** for the whole display (data fetch, table logic, sends targets).
 * **Bus** must handle **≥ 60 modules**, more if possible. Front-runner: RS-485 multi-drop
   (options register §3, `docs/options-register.md`); CAN is the alternative.
-* **One small MCU board per module** (decided 2026-10-14), like adamgmakes' and Drew's
+* **One small MCU board per module** (decided 2026-10-14), like Drew's
   mechanical-seven-segment v0.1 board (`mechanical-seven-segment-display/pcb/v0.1`: STM32G030 +
   RS-485 + chain auto-enumeration). The MCU runs the N20's encoder loop locally.
 * **Board shape:** a rectangle standing upright **inside** the enclosure near the back, the back
-  of the enclosure wrapped around it; it slides in on rails like the dowjames board.
+  of the enclosure wrapped around it; it slides in on rails.
 * **Row layout:** `name – digit – digit`, ~20 rows stacked.
   * **All motors move to the right side** (2026-10-14): the enclosures are mirrored (same design),
     so every module slots together the same way and the name module's board sits next to the
     digits. Modules will screw together into one solid row (not designed yet).
-  * Modules in a row **daisy-chain** (power + data in/out). Preferred: dowjames-style right-angle
+  * Modules in a row **daisy-chain** (power + data in/out). Preferred: a right-angle
     header / socket that plug straight into the neighbour, or JST cables. No pogo pins.
 * **Main trunk on the right** with power + communication; each row is a **branch** off it.
   The trunk's form (PCB rail, bus bars, loom) is still to be investigated; ideally it reuses the

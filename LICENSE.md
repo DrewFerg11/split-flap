@@ -66,7 +66,7 @@ displays, ask first by opening an issue at
 
 ## Acknowledgements
 
-This is an original design. It was informed by measurements and ideas from other
+This is an original design. It was informed by ideas from other
 split-flap projects, including [Adam G Makes](https://github.com/adamgmakes/SplitFlapDisplay),
 [Morgan Manly](https://github.com/ManlyMorgan/Split-Flap-Display), and dowjames'
 SplitFlap PCB v5.1 (board chaining and enclosure mounting). No files from those

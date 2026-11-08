@@ -13,8 +13,8 @@ One small board per split-flap module (digit and name) of the [Premier League di
 N20 encoder motor, A3144 homing, RS-485 to a single ESP32 host, chained module-to-module through
 right-angle headers on the board edges.
 
-Board-to-board chaining and rail mounting in the enclosure follow the approach of dowjames'
-SplitFlap PCB v5.1, and the hall sensor connector keeps its pinout so existing leads plug in.
+The hall sensor connector and pinout are the same as on the SplitFlap v5.1 board, so existing
+sensor leads plug in.
 
 ```
 design/

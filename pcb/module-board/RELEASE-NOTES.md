@@ -19,8 +19,8 @@ prerelease_note = "the first ordered prototype. The silkscreen still reads LEAGU
 
 One small board per split-flap module: an STM32G031 drives a 12 V N20 encoder motor through a
 DRV8870, homes on an A3144 hall sensor, and talks RS-485 to a single ESP32 controller. Boards
-chain module to module through right-angle headers on the board edges, following dowjames'
-SplitFlap v5.1 approach, and the hall connector keeps v5.1's pinout so existing leads plug in.
+chain module to module through right-angle headers on the board edges, and the hall connector
+and pinout are the same as on the SplitFlap v5.1 board, so existing sensor leads plug in.
 
 ## Known issues
 

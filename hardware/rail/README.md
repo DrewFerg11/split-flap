@@ -13,7 +13,7 @@ power and data from the PSU + ESP32 at the bottom to every row.
 | `docs/product-brief.md` R9 | bus up the side, "proper rail (preferred) or a wiring loom"; rows connect on one edge only. Written for the **left**; moved to the **right** 2026-10-14 ([Premier League README](../../applications/premier-league/README.md#electronics--first-ideas-drew-2026-10-14-draft)) |
 | `docs/architecture-options.md` §2, open Q4 | a rail is a multi-drop bus, 4 conductors (12 V, GND, A, B); "PCB backplane, busbar, or loom — as much mechanical as electrical" |
 | `docs/options-register.md` §6 | pogo onto passive backplane ⭐ (adamgmakes), card edge ✅, board-to-board headers ✅ (not blind-mate), busbar + flying leads 💤 |
-| `docs/reference-design-adamgmakes.md` | adamgmakes ships a passive 5-module bus board, 4 pogo pins per module (9 mm, 2.0 head, 5.0 tube) |
+| [adamgmakes/SplitFlapDisplay](https://github.com/adamgmakes/SplitFlapDisplay) | publishes a passive 5-module bus board, 4 pogo pins per module (9 mm, 2.0 head, 5.0 tube) |
 | `docs/action-items.md` | open: "evaluate pogo pins for the rail interface", "decide rail construction" |
 | [`DESIGN-1.md`](../../pcb/module-board/design/DESIGN-1.md) §4–6, §9.1, open item 6 | trunk + one stub per row; 120 Ω at the two trunk ends, bias at the host; the rightmost digit's **male 5-pin 2.54 RA header** takes the row's plug (12V · GND · A · B · ENUM); 60 modules ≈ 15–20 A, PSU ~25–30 A; trunk wiring, per-row fusing, termination left to "a separate design" |
 
@@ -188,7 +188,7 @@ works and is basically our "rail tile" idea; (2) blind-mate is done by printed s
 socket, as we plan; (3) his chain signal goes through the rail, which is one answer to our ENUM question; (4) his
 currents are tiny (~4 A for the whole display), so his PCB traces don't tell us anything about our ~25 A.
 
-### adamgmakes — bus board (local copy in `reference/pcbs/adamgmakes/PCBs/`)
+### Prior art: adamgmakes' bus board ([SplitFlapDisplay](https://github.com/adamgmakes/SplitFlapDisplay))
 
 | | |
 |---|---|
@@ -273,4 +273,4 @@ row** (inline mini blade on the drop for A, polyfuse or blade on the tile for B)
   [Nilight 12-way with LEDs](https://www.nilight.com/collections/most-bought-icart/products/nilight-12-way-blade-fuse-block-12-circuits-with-negative-bus-fuse-box-holder-with-led-indicator-ato-atc-fuse-panel-waterproof-cover-for-12v-automotive-cars-marine-boats-rvs-trailers-2-years-warranty);
   [Keystone 3568 PCB mini-blade holder](https://www.digikey.com.au/en/products/detail/keystone-electronics/3568/2137306)
 * Prior art: [dennis9819 split-flap controller](https://github.com/dennis9819/split-flap-controller) (modules on one
-  backplane, card edge), adamgmakes (pogo bus board, DIN rail mount; `docs/reference-design-adamgmakes.md`)
+  backplane, card edge), [adamgmakes](https://github.com/adamgmakes/SplitFlapDisplay) (pogo bus board, DIN rail mount)
