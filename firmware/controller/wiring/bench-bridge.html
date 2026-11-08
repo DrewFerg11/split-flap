@@ -1,0 +1,309 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bridge Board Bench</title>
+<style>
+  /* Tokens shared by the project's wiring pages so they read as a set. */
+  :root {
+    --ground: #F1F4F2; --surface: #FFFFFF; --surface-2: #E9EDEB;
+    --ink: #13181A; --ink-2: #555E61; --ink-3: #848E92;
+    --line: #D2D9D6; --line-strong: #B4BEBB;
+    --accent: #0E7C86; --accent-soft: rgba(14,124,134,0.09);
+    --danger: #C0392E; --danger-soft: rgba(192,57,46,0.08);
+    --caution: #A86A12; --caution-soft: rgba(168,106,18,0.10);
+    --w-12: #C0392E; --w-mot: #CE7A1E; --w-a: #2C6AB0; --w-b: #6E4CBC;
+    --w-rx: #2F8055; --w-de: #0E7C86; --w-tx: #B0457A; --w-gnd: #262C2F; --w-33: #8A6A10;
+    --board: #FBFCFB; --mod: #F3F1FA; --metal: #C9CFCD; --metal-2: #AEB6B3;
+    --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: "Cascadia Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+      --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+      --line: #293135; --line-strong: #3A4449;
+      --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+      --danger: #FF7062; --danger-soft: rgba(255,112,98,0.11);
+      --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+      --w-12: #FF7062; --w-mot: #F0A64A; --w-a: #6BA6E8; --w-b: #A98BF0;
+      --w-rx: #5CBE89; --w-de: #4CCBD6; --w-tx: #E58BB7; --w-gnd: #AFB9BB; --w-33: #D9B85A;
+      --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #48514E;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+    --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+    --line: #293135; --line-strong: #3A4449;
+    --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+    --danger: #FF7062; --danger-soft: rgba(255,112,98,0.11);
+    --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+    --w-12: #FF7062; --w-mot: #F0A64A; --w-a: #6BA6E8; --w-b: #A98BF0;
+    --w-rx: #5CBE89; --w-de: #4CCBD6; --w-tx: #E58BB7; --w-gnd: #AFB9BB; --w-33: #D9B85A;
+    --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #48514E;
+    color-scheme: dark;
+  }
+
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 28px; }
+  .col { max-width: 780px; min-width: 0; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: 19px; margin: 0 0 10px; }
+  p { margin: 0 0 10px; }
+  .eyebrow { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .lede { color: var(--ink-2); max-width: 70ch; }
+  code { font-family: var(--mono); font-size: 0.9em; }
+
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 900px; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  .callout { border: 1px solid var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 14px 18px; }
+  .callout h2 { color: var(--danger); font-size: 16px; }
+  .callout ol, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  .note { border-left: 3px solid var(--caution); background: var(--caution-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; }
+
+  .tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 11px/1.3 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); background: var(--surface-2); }
+  tr:last-child td { border-bottom: 0; }
+  td.m { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .dim { color: var(--ink-3); }
+  pre { margin: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font: 12.5px/1.55 var(--mono); }
+
+  /* ---- SVG ---- */
+  svg text { font-family: var(--sans); fill: var(--ink); }
+  svg .title { font-size: 13px; font-weight: 600; }
+  svg .sm { font-size: 11px; fill: var(--ink-2); }
+  svg .xs { font-size: 10px; fill: var(--ink-3); }
+  svg .pn { font: 600 11px var(--mono); fill: var(--ink); }
+  svg .pnx { font: 600 9.5px var(--mono); fill: var(--ink-2); }
+  svg .wl { font: 600 10.5px var(--mono); }
+  svg .board { fill: var(--board); stroke: var(--line-strong); stroke-width: 1.5; }
+  svg .mod { fill: var(--mod); stroke: var(--line-strong); stroke-width: 1.5; }
+  svg .psu { fill: var(--danger-soft); stroke: var(--w-12); stroke-width: 1.5; }
+  svg .chip { fill: var(--surface-2); stroke: var(--ink-3); }
+  svg .conn { fill: var(--surface); stroke: var(--ink-2); }
+  svg .hdr { fill: var(--ink-3); }
+  svg .pin { stroke: var(--ink-2); stroke-width: 2; }
+  svg .can { fill: var(--metal); stroke: var(--ink-3); }
+  svg .hall { fill: var(--ink); }
+  svg .usb { fill: var(--metal); stroke: var(--metal-2); }
+  svg .thru { fill: none; stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.55; }
+  svg .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  svg .w { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  svg .dot { stroke: none; }
+  svg .on { fill: var(--accent); }
+  svg .off { fill: none; stroke: var(--ink-3); stroke-dasharray: 2 2; }
+</style>
+
+<div class="wrap">
+  <header class="col">
+    <div class="eyebrow">Split-flap module board v0.1 · bench test · no adapter</div>
+    <h1>Three modules, with a fourth board as the bridge</h1>
+    <p class="lede">No RS-485 adapter. A spare board stands in for one: the ESP32 sends plain 3.3 V serial into the bridge
+    board's J6 pads, and the bridge's own RS-485 chip (U2) puts it on the bus. The bridge sits at the start of the row, and
+    the 12 V supply goes into its J1. Boards 1–3 plug in after it (J1 into J2). The bridge needs no motor and no address.</p>
+  </header>
+
+  <div class="callout col">
+    <h2>Before you switch on</h2>
+    <ol>
+      <li>J6 <b>pad 1 (3V3) stays unconnected</b>: the board makes its own 3.3 V. Only pads 5, 6 and 7 go to the ESP32.</li>
+      <li>TX goes to RX: the ESP's TX2 goes to pad 7 (the bridge's RX), and the bridge's pad 6 (TX) goes to the ESP's RX2.</li>
+      <li>J1 <b>pin 1 is the top pin</b> (+12 V), as in <code>pcb/module-board/design/images/bringup-meter-points.png</code>.</li>
+      <li><b>No JP_TERM shunts</b> on any board. The bus is about 20 cm long, so it doesn't need termination, and with nothing on it the bus stays quiet when idle.</li>
+    </ol>
+  </div>
+
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1160 540" role="img" aria-label="Wiring: ESP32 serial to the bridge board's J6 pads; 12 V into the bridge's J1; boards 1, 2, 3 chained after it">
+      <!-- ============ four boards (x0 = 60, 280, 500, 720) ============ -->
+      <rect class="conn" x="20" y="150" width="40" height="100" rx="3"/>
+      <text class="xs" x="22" y="264">J2 empty</text>
+      <rect class="board" x="60" y="110" width="150" height="250" rx="6"/>
+      <text class="title" x="135" y="132" text-anchor="middle">Board 3</text>
+      <text class="sm" x="135" y="146" text-anchor="middle">address 3 · end of row</text>
+
+      <rect class="conn" x="240" y="150" width="40" height="100" rx="3"/>
+      <rect class="board" x="280" y="110" width="150" height="250" rx="6"/>
+      <text class="title" x="355" y="132" text-anchor="middle">Board 2</text>
+      <text class="sm" x="355" y="146" text-anchor="middle">address 2</text>
+
+      <rect class="conn" x="460" y="150" width="40" height="100" rx="3"/>
+      <rect class="board" x="500" y="110" width="150" height="250" rx="6"/>
+      <text class="title" x="575" y="132" text-anchor="middle">Board 1</text>
+      <text class="sm" x="575" y="146" text-anchor="middle">address 1</text>
+
+      <rect class="conn" x="680" y="150" width="40" height="100" rx="3"/>
+      <rect class="mod" x="720" y="110" width="150" height="250" rx="6"/>
+      <text class="title" x="795" y="132" text-anchor="middle">Bridge (board 4)</text>
+      <text class="sm" x="795" y="146" text-anchor="middle">no motor · no address</text>
+
+      <!-- pass-through bus -->
+      <g class="thru">
+        <path d="M60 160H210M280 160H430M500 160H650M720 160H870" style="stroke:var(--w-12)"/>
+        <path d="M60 180H210M280 180H430M500 180H650M720 180H870" style="stroke:var(--w-gnd)"/>
+        <path d="M60 200H210M280 200H430M500 200H650M720 200H870" style="stroke:var(--w-a)"/>
+        <path d="M60 220H210M280 220H430M500 220H650M720 220H870" style="stroke:var(--w-b)"/>
+      </g>
+
+      <!-- J1 male headers -->
+      <g>
+        <rect class="hdr" x="210" y="150" width="6" height="100"/>
+        <rect class="hdr" x="430" y="150" width="6" height="100"/>
+        <rect class="hdr" x="650" y="150" width="6" height="100"/>
+        <rect class="hdr" x="870" y="150" width="6" height="100"/>
+        <path class="pin" d="M216 160H248M216 180H248M216 200H248M216 220H248M216 240H248"/>
+        <path class="pin" d="M436 160H468M436 180H468M436 200H468M436 220H468M436 240H468"/>
+        <path class="pin" d="M656 160H688M656 180H688M656 200H688M656 220H688M656 240H688"/>
+        <path class="pin" d="M876 160H906M876 180H906M876 200H906M876 220H906M876 240H906"/>
+        <text class="xs" x="229" y="144" text-anchor="middle">J1→J2</text>
+        <text class="xs" x="449" y="144" text-anchor="middle">J1→J2</text>
+        <text class="xs" x="669" y="144" text-anchor="middle">J1→J2</text>
+        <text class="xs" x="892" y="144" text-anchor="middle">J1</text>
+      </g>
+
+      <!-- bridge J1 pin labels -->
+      <g text-anchor="end" style="paint-order:stroke;stroke:var(--mod);stroke-width:4px">
+        <text class="pnx" x="865" y="163">1 +12V</text>
+        <text class="pnx" x="865" y="183">2 GND</text>
+        <text class="pnx" x="865" y="203">3 A</text>
+        <text class="pnx" x="865" y="223">4 B</text>
+        <text class="pnx" x="865" y="243">5 ENUM</text>
+      </g>
+
+      <!-- module board parts -->
+      <g>
+        <rect class="chip" x="72" y="266" width="58" height="28" rx="2"/><text class="xs" x="101" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="140" y="266" width="58" height="28" rx="2"/><text class="xs" x="169" y="284" text-anchor="middle">U2 485</text>
+        <rect class="chip" x="292" y="266" width="58" height="28" rx="2"/><text class="xs" x="321" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="360" y="266" width="58" height="28" rx="2"/><text class="xs" x="389" y="284" text-anchor="middle">U2 485</text>
+        <rect class="chip" x="512" y="266" width="58" height="28" rx="2"/><text class="xs" x="541" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="580" y="266" width="58" height="28" rx="2"/><text class="xs" x="609" y="284" text-anchor="middle">U2 485</text>
+        <rect class="off" x="74" y="306" width="22" height="12" rx="2"/><text class="pnx" x="102" y="316">JP_TERM: off</text>
+        <rect class="off" x="294" y="306" width="22" height="12" rx="2"/><text class="pnx" x="322" y="316">JP_TERM: off</text>
+        <rect class="off" x="514" y="306" width="22" height="12" rx="2"/><text class="pnx" x="542" y="316">JP_TERM: off</text>
+        <text class="xs" x="72" y="346">J4 pads</text><text class="xs" x="198" y="346" text-anchor="end">J5 hall</text>
+        <text class="xs" x="292" y="346">J4 pads</text><text class="xs" x="418" y="346" text-anchor="end">J5 hall</text>
+        <text class="xs" x="512" y="346">J4 pads</text><text class="xs" x="638" y="346" text-anchor="end">J5 hall</text>
+      </g>
+
+      <!-- bridge parts: J6 pads down the left edge, chips on the right -->
+      <g>
+        <rect class="chip" x="800" y="262" width="58" height="26" rx="2"/><text class="xs" x="829" y="279" text-anchor="middle">STM32</text>
+        <rect class="chip" x="800" y="294" width="58" height="26" rx="2"/><text class="xs" x="829" y="311" text-anchor="middle">U2 485</text>
+        <text class="pnx" x="801" y="342">JP_TERM: off</text>
+
+        <text class="xs" x="728" y="244">J6 pads</text>
+        <circle class="conn" cx="732" cy="256" r="4.5" style="stroke:var(--w-12)"/>
+        <circle class="conn" cx="732" cy="270" r="4.5"/>
+        <circle class="conn" cx="732" cy="284" r="4.5"/>
+        <circle class="conn" cx="732" cy="298" r="4.5"/>
+        <circle class="conn" cx="732" cy="312" r="4.5"/>
+        <circle class="conn" cx="732" cy="326" r="4.5"/>
+        <circle class="conn" cx="732" cy="340" r="4.5"/>
+        <g class="pnx">
+          <text x="742" y="259" style="fill:var(--danger)">1 3V3 – leave</text>
+          <text x="742" y="273">2 SWDIO</text>
+          <text x="742" y="287">3 SWCLK</text>
+          <text x="742" y="301">4 NRST</text>
+          <text x="742" y="315" style="fill:var(--ink)">5 GND</text>
+          <text x="742" y="329" style="fill:var(--ink)">6 TX</text>
+          <text x="742" y="343" style="fill:var(--ink)">7 RX</text>
+        </g>
+      </g>
+
+      <!-- motors + hall sensors (boards 1-3 only) -->
+      <g>
+        <path class="w" d="M95 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="95" cy="430" r="22"/><text class="xs" x="95" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M180 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="170" y="412" width="20" height="16" rx="2"/>
+        <path class="w" d="M315 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="315" cy="430" r="22"/><text class="xs" x="315" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M400 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="390" y="412" width="20" height="16" rx="2"/>
+        <path class="w" d="M535 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="535" cy="430" r="22"/><text class="xs" x="535" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M620 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="610" y="412" width="20" height="16" rx="2"/>
+        <text class="sm" x="355" y="490" text-anchor="middle">Boards 1–3: N20 motor on the J4 pads (M1 GND A B 3V3 M2, as board 1) · A3144 hall on J5</text>
+      </g>
+
+      <!-- ============ 12 V supply ============ -->
+      <rect class="psu" x="900" y="20" width="160" height="60" rx="5"/>
+      <text class="title" x="980" y="44" text-anchor="middle">12 V supply</text>
+      <text class="sm" x="980" y="60" text-anchor="middle">bench PSU, ≥ 2 A</text>
+      <text class="pn" x="930" y="76" text-anchor="middle" style="fill:var(--w-12)">+</text>
+      <text class="pn" x="980" y="76" text-anchor="middle">−</text>
+      <path class="w" d="M906 160H930V80" style="stroke:var(--w-12)"/>
+      <path class="w" d="M906 180H980V80" style="stroke:var(--w-gnd)"/>
+      <text class="xs" x="912" y="243">3–5 n/c</text>
+
+      <!-- ============ ESP32 ============ -->
+      <rect class="board" x="1000" y="330" width="130" height="170" rx="6"/>
+      <text class="title" x="1065" y="350" text-anchor="middle">ESP32</text>
+      <text class="xs" x="1065" y="363" text-anchor="middle">DevKit V1 (n20-bench)</text>
+      <g class="pn">
+        <text x="1008" y="404">GPIO17</text><text x="1008" y="424">GPIO16</text><text x="1008" y="444">GND</text>
+      </g>
+      <g class="xs"><text x="1076" y="404">TX2</text><text x="1076" y="424">RX2</text></g>
+      <rect class="usb" x="1051" y="492" width="28" height="14" rx="2"/>
+      <path class="w" d="M1065 506V522" style="stroke:var(--ink-3);stroke-width:4"/>
+      <text class="sm" x="1000" y="530" text-anchor="end">USB to PC (COM4) · powers the ESP</text>
+
+      <!-- J6 to ESP: nested L-routes out of the bridge's left edge, under the bridge -->
+      <path class="w" d="M732 340H712V400H1000" style="stroke:var(--w-tx)"/>
+      <path class="w" d="M732 326H700V420H1000" style="stroke:var(--w-rx)"/>
+      <path class="w" d="M732 312H688V440H1000" style="stroke:var(--w-gnd)"/>
+      <g class="wl halo">
+        <text x="850" y="396" style="fill:var(--w-tx)">ESP TX2 → bridge RX</text>
+        <text x="850" y="416" style="fill:var(--w-rx)">bridge TX → ESP RX2</text>
+        <text x="850" y="436" style="fill:var(--w-gnd)">GND</text>
+      </g>
+    </svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--w-12)"></i>+12 V</span>
+      <span><i style="background:var(--w-gnd)"></i>GND</span>
+      <span><i style="background:var(--w-tx)"></i>ESP TX → bridge RX</span>
+      <span><i style="background:var(--w-rx)"></i>bridge TX → ESP RX</span>
+      <span class="dim">dashed = 12 V, GND, A, B passing through each board</span>
+    </div>
+  </figure>
+
+  <section class="col">
+    <h2>Connections</h2>
+    <div class="tbl"><table>
+      <tr><th>From</th><th>To</th><th>Note</th></tr>
+      <tr><td class="m">PSU +12 V</td><td class="m">Bridge J1 pin 1 (top)</td><td><span class="sw" style="background:var(--w-12)"></span>female Dupont onto the header pin</td></tr>
+      <tr><td class="m">PSU −</td><td class="m">Bridge J1 pin 2</td><td><span class="sw" style="background:var(--w-gnd)"></span></td></tr>
+      <tr><td class="m">Bridge J1 pins 3–5</td><td class="m">—</td><td class="dim">nothing: the bus starts at the bridge</td></tr>
+      <tr><td class="m">ESP32 GPIO17 (TX2)</td><td class="m">Bridge J6 pad 7 (RX)</td><td><span class="sw" style="background:var(--w-tx)"></span>3.3 V on both sides</td></tr>
+      <tr><td class="m">ESP32 GPIO16 (RX2)</td><td class="m">Bridge J6 pad 6 (TX)</td><td><span class="sw" style="background:var(--w-rx)"></span></td></tr>
+      <tr><td class="m">ESP32 GND</td><td class="m">Bridge J6 pad 5 (GND)</td><td><span class="sw" style="background:var(--w-gnd)"></span>also shares ground with the 12 V side</td></tr>
+      <tr><td class="m">Bridge J6 pad 1 (3V3)</td><td class="m">—</td><td class="dim">leave unconnected</td></tr>
+      <tr><td class="m">Bridge J2</td><td class="m">Board 1 J1</td><td class="dim">plug together directly</td></tr>
+      <tr><td class="m">Board 1 J2 → Board 2 J1<br>Board 2 J2 → Board 3 J1</td><td class="m">—</td><td class="dim">plug together directly</td></tr>
+    </table></div>
+    <p class="note" style="margin-top:12px">Tip: solder a 7-pin 2.54 mm male header into the bridge's J6. Then the ST-Link (pads 2–5) and the ESP32 (pads 5–7) both clip on with Dupont leads, with no rewiring when you reflash. Two leads can share pad 5 (GND) if you stack the Dupont connectors or splice them.</p>
+  </section>
+
+  <section class="col">
+    <h2>Bring-up order</h2>
+    <ol class="steps">
+      <li>Bridge board and boards 2 and 3: unpowered shorts check, power-up, flash, LED (DESIGN-1 §14.1 step 2).</li>
+      <li>Flash the bridge with the <code>bridge</code> build (<code>firmware/module</code>) (it copies bytes between J6 serial and RS-485). Flash boards 1–3 with <code>firmware/module</code> envs <code>node1</code>–<code>node3</code>.</li>
+      <li>Bridge plus board 1 only: <code>1 ping</code>, <code>1 home</code>.</li>
+      <li>Add boards 2 and 3: <code>s</code> (status of all), <code>* home</code>, <code>* go 17</code>.</li>
+    </ol>
+    <p class="dim" style="margin-top:10px; font-size:13.5px">Later, a MAX3485 adapter replaces the bridge (see <code>bench-max3485.html</code>); nothing else changes.</p>
+  </section>
+</div>

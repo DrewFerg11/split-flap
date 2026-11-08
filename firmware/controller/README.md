@@ -20,8 +20,9 @@ builds on the same library.
 | `c3` | ESP32-C3 Super Mini | UART1: RX GPIO5, TX GPIO6 | native USB |
 
 DE+RE is GPIO4 on all three, for a MAX3485 adapter; unused with the bridge board (a spare module board
-flashed with the module's `bridge` env, wired to its J6 pads 5-7). Wiring pages: not migrated yet
-(Premier League application).
+flashed with the module's `bridge` env, wired to its J6 pads 5-7). Wiring pages:
+[`wiring/bench-max3485.html`](wiring/bench-max3485.html) (MAX3485 adapter) and
+[`wiring/bench-bridge.html`](wiring/bench-bridge.html) (bridge board); open them in a browser.
 
     pio run -e c3 -t upload        build + flash (your board's env)
     pio device monitor -e c3       console, then type ? for commands

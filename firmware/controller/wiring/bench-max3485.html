@@ -1,0 +1,391 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Module Bench</title>
+<style>
+  /* Tokens shared by the project's wiring pages so they read as a set. */
+  :root {
+    --ground: #F1F4F2; --surface: #FFFFFF; --surface-2: #E9EDEB;
+    --ink: #13181A; --ink-2: #555E61; --ink-3: #848E92;
+    --line: #D2D9D6; --line-strong: #B4BEBB;
+    --accent: #0E7C86; --accent-soft: rgba(14,124,134,0.09);
+    --danger: #C0392E; --danger-soft: rgba(192,57,46,0.08);
+    --caution: #A86A12; --caution-soft: rgba(168,106,18,0.10);
+    --w-12: #C0392E; --w-mot: #CE7A1E; --w-a: #2C6AB0; --w-b: #6E4CBC;
+    --w-rx: #2F8055; --w-de: #0E7C86; --w-tx: #B0457A; --w-gnd: #262C2F; --w-33: #8A6A10; --w-enum: #6E7F12;
+    --board: #FBFCFB; --mod: #F3F1FA; --metal: #C9CFCD; --metal-2: #AEB6B3;
+    --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: "Cascadia Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+      --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+      --line: #293135; --line-strong: #3A4449;
+      --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+      --danger: #FF7062; --danger-soft: rgba(255,112,98,0.11);
+      --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+      --w-12: #FF7062; --w-mot: #F0A64A; --w-a: #6BA6E8; --w-b: #A98BF0;
+      --w-rx: #5CBE89; --w-de: #4CCBD6; --w-tx: #E58BB7; --w-gnd: #AFB9BB; --w-33: #D9B85A; --w-enum: #B5CC4A;
+      --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #48514E;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+    --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+    --line: #293135; --line-strong: #3A4449;
+    --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+    --danger: #FF7062; --danger-soft: rgba(255,112,98,0.11);
+    --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+    --w-12: #FF7062; --w-mot: #F0A64A; --w-a: #6BA6E8; --w-b: #A98BF0;
+    --w-rx: #5CBE89; --w-de: #4CCBD6; --w-tx: #E58BB7; --w-gnd: #AFB9BB; --w-33: #D9B85A; --w-enum: #B5CC4A;
+    --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #48514E;
+    color-scheme: dark;
+  }
+
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 28px; }
+  .col { max-width: 780px; min-width: 0; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: 19px; margin: 0 0 10px; }
+  p { margin: 0 0 10px; }
+  .eyebrow { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .lede { color: var(--ink-2); max-width: 70ch; }
+  code { font-family: var(--mono); font-size: 0.9em; }
+
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 900px; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  .callout { border: 1px solid var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 14px 18px; }
+  .callout h2 { color: var(--danger); font-size: 16px; }
+  .callout ol, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  .note { border-left: 3px solid var(--caution); background: var(--caution-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; }
+
+  .tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 11px/1.3 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); background: var(--surface-2); }
+  tr:last-child td { border-bottom: 0; }
+  td.m { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .dim { color: var(--ink-3); }
+  .pick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+  .pick button { font: 600 13px var(--sans); color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+  .pick button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  pre { margin: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font: 12.5px/1.55 var(--mono); }
+
+  /* ---- SVG ---- */
+  svg text { font-family: var(--sans); fill: var(--ink); }
+  svg .title { font-size: 13px; font-weight: 600; }
+  svg .sm { font-size: 11px; fill: var(--ink-2); }
+  svg .xs { font-size: 10px; fill: var(--ink-3); }
+  svg .pn { font: 600 11px var(--mono); fill: var(--ink); }
+  svg .pnx { font: 600 9.5px var(--mono); fill: var(--ink-2); }
+  svg .wl { font: 600 10.5px var(--mono); }
+  svg .board { fill: var(--board); stroke: var(--line-strong); stroke-width: 1.5; }
+  svg .mod { fill: var(--mod); stroke: var(--line-strong); stroke-width: 1.5; }
+  svg .psu { fill: var(--danger-soft); stroke: var(--w-12); stroke-width: 1.5; }
+  svg .chip { fill: var(--surface-2); stroke: var(--ink-3); }
+  svg .conn { fill: var(--surface); stroke: var(--ink-2); }
+  svg .hdr { fill: var(--ink-3); }
+  svg .pin { stroke: var(--ink-2); stroke-width: 2; }
+  svg .can { fill: var(--metal); stroke: var(--ink-3); }
+  svg .hall { fill: var(--ink); }
+  svg .usb { fill: var(--metal); stroke: var(--metal-2); }
+  svg .thru { fill: none; stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.55; }
+  svg .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  svg .w { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  svg .dot { stroke: none; }
+  svg .on { fill: var(--accent); }
+  svg .off { fill: none; stroke: var(--ink-3); stroke-dasharray: 2 2; }
+</style>
+
+<div class="wrap">
+  <header class="col">
+    <div class="eyebrow">Split-flap module board v0.1 · bench test</div>
+    <h1>Three modules on one RS-485 bus</h1>
+    <p class="lede">The ESP32 is powered over USB and talks to a 3.3 V RS-485 adapter. The adapter's A/B lines and the 12 V supply go into
+    board&nbsp;1's J1 header. Boards&nbsp;2 and&nbsp;3 plug straight into the board before them (J1 into J2), so power and bus
+    pass down the row with no extra wiring. Each board drives its own motor and reads its own hall sensor.</p>
+  </header>
+
+  <section class="col">
+    <div class="pick" role="group" aria-label="Controller board">
+      <span class="dim">Controller:</span>
+      <button type="button" data-board="esp32" aria-pressed="true">ESP32 DevKit V1</button>
+      <button type="button" data-board="s3" aria-pressed="false">ESP32-S3</button>
+      <button type="button" data-board="c3" aria-pressed="false">ESP32-C3</button>
+    </div>
+    <p class="dim" style="margin:8px 0 0; font-size:13.5px">Any of the three works. Pins below and in the diagram follow this choice. Flash with
+      <code data-t="flash">pio run -t upload</code> in <code>firmware/controller</code>.</p>
+  </section>
+
+  <div class="callout col">
+    <h2>Before you switch on</h2>
+    <ol>
+      <li>Power the adapter's <b>VCC from the ESP32's 3V3 pin</b>, never from VIN/5V: at 5 V its RXD output would put 5 V on <span data-t="rx">GPIO16</span>.</li>
+      <li>J1 <b>pin 1 is the top pin</b> (+12 V), as in <code>pcb/module-board/design/images/bringup-meter-points.png</code>. Getting pins 1 and 2 swapped is what Q1 protects against, but check anyway.</li>
+      <li>ESP32 GND, adapter GND and the PSU's − must all be connected. RS-485 needs a shared ground.</li>
+      <li>J1 pin 5 (ENUM) goes to an ESP GPIO, <b>never to 12 V</b>: the board's 1 k / 10 k would put ~11 V on the STM32.</li>
+      <li>Shunt on <b>JP_TERM on board 3 only</b>. The adapter end may or may not have its own 120 Ω; on a short bench bus it works either way.</li>
+    </ol>
+  </div>
+
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1160 520" role="img" aria-label="Wiring: ESP32 to RS-485 adapter to board 1 J1, with 12 V supply; boards 2 and 3 chained via J2 and J1">
+      <!-- ============ three module boards (x0 = 60, 280, 500) ============ -->
+      <!-- shared drawing per board, written out three times -->
+      <g id="b3">
+        <rect class="conn" x="20" y="150" width="40" height="100" rx="3"/>
+        <text class="xs" x="22" y="264">J2 empty</text>
+        <rect class="board" x="60" y="110" width="150" height="250" rx="6"/>
+        <text class="title" x="135" y="132" text-anchor="middle">Board 3</text>
+        <text class="sm" x="135" y="146" text-anchor="middle">address 3 · end of row</text>
+      </g>
+      <g id="b2">
+        <rect class="conn" x="240" y="150" width="40" height="100" rx="3"/>
+        <rect class="board" x="280" y="110" width="150" height="250" rx="6"/>
+        <text class="title" x="355" y="132" text-anchor="middle">Board 2</text>
+        <text class="sm" x="355" y="146" text-anchor="middle">address 2</text>
+      </g>
+      <g id="b1">
+        <rect class="conn" x="460" y="150" width="40" height="100" rx="3"/>
+        <rect class="board" x="500" y="110" width="150" height="250" rx="6"/>
+        <text class="title" x="575" y="132" text-anchor="middle">Board 1</text>
+        <text class="sm" x="575" y="146" text-anchor="middle">address 1 · nearest host</text>
+      </g>
+
+      <!-- pass-through bus inside each board, J2 to J1 -->
+      <g class="thru">
+        <path d="M60 160H210M280 160H430M500 160H650" style="stroke:var(--w-12)"/>
+        <path d="M60 180H210M280 180H430M500 180H650" style="stroke:var(--w-gnd)"/>
+        <path d="M60 200H210M280 200H430M500 200H650" style="stroke:var(--w-a)"/>
+        <path d="M60 220H210M280 220H430M500 220H650" style="stroke:var(--w-b)"/>
+      </g>
+
+      <!-- J1 male headers (right edge): plastic strip + 5 pins; boards 3/2 mate into the next socket -->
+      <g>
+        <rect class="hdr" x="210" y="150" width="6" height="100"/>
+        <rect class="hdr" x="430" y="150" width="6" height="100"/>
+        <rect class="hdr" x="650" y="150" width="6" height="100"/>
+        <path class="pin" d="M216 160H248M216 180H248M216 200H248M216 220H248M216 240H248"/>
+        <path class="pin" d="M436 160H468M436 180H468M436 200H468M436 220H468M436 240H468"/>
+        <path class="pin" d="M656 160H686M656 180H686M656 200H686M656 220H686M656 240H686"/>
+        <text class="xs" x="229" y="144" text-anchor="middle">J1→J2</text>
+        <text class="xs" x="449" y="144" text-anchor="middle">J1→J2</text>
+        <text class="xs" x="672" y="144" text-anchor="middle">J1</text>
+      </g>
+
+      <!-- board 1 pin labels -->
+      <g text-anchor="end">
+        <text class="pnx" x="645" y="163" style="paint-order:stroke;stroke:var(--board);stroke-width:4px">1 +12V</text>
+        <text class="pnx" x="645" y="183" style="paint-order:stroke;stroke:var(--board);stroke-width:4px">2 GND</text>
+        <text class="pnx" x="645" y="203" style="paint-order:stroke;stroke:var(--board);stroke-width:4px">3 A</text>
+        <text class="pnx" x="645" y="223" style="paint-order:stroke;stroke:var(--board);stroke-width:4px">4 B</text>
+        <text class="pnx" x="645" y="243" style="paint-order:stroke;stroke:var(--board);stroke-width:4px">5 ENUM</text>
+      </g>
+
+      <!-- parts on each board: MCU, RS-485 chip, JP_TERM -->
+      <g>
+        <rect class="chip" x="72" y="266" width="58" height="28" rx="2"/><text class="xs" x="101" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="140" y="266" width="58" height="28" rx="2"/><text class="xs" x="169" y="284" text-anchor="middle">U2 485</text>
+        <rect class="chip" x="292" y="266" width="58" height="28" rx="2"/><text class="xs" x="321" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="360" y="266" width="58" height="28" rx="2"/><text class="xs" x="389" y="284" text-anchor="middle">U2 485</text>
+        <rect class="chip" x="512" y="266" width="58" height="28" rx="2"/><text class="xs" x="541" y="284" text-anchor="middle">STM32</text>
+        <rect class="chip" x="580" y="266" width="58" height="28" rx="2"/><text class="xs" x="609" y="284" text-anchor="middle">U2 485</text>
+
+        <rect class="on"  x="74" y="306" width="22" height="12" rx="2"/>
+        <text class="pnx" x="102" y="316" style="fill:var(--accent)">JP_TERM: shunt ON</text>
+        <rect class="off" x="294" y="306" width="22" height="12" rx="2"/>
+        <text class="pnx" x="322" y="316">JP_TERM: off</text>
+        <rect class="off" x="514" y="306" width="22" height="12" rx="2"/>
+        <text class="pnx" x="542" y="316">JP_TERM: off</text>
+
+        <text class="xs" x="72" y="346">J4 pads</text><text class="xs" x="198" y="346" text-anchor="end">J5 hall</text>
+        <text class="xs" x="292" y="346">J4 pads</text><text class="xs" x="418" y="346" text-anchor="end">J5 hall</text>
+        <text class="xs" x="512" y="346">J4 pads</text><text class="xs" x="638" y="346" text-anchor="end">J5 hall</text>
+      </g>
+
+      <!-- motors + hall sensors under each board -->
+      <g>
+        <!-- board 3 -->
+        <path class="w" d="M95 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="95" cy="430" r="22"/><text class="xs" x="95" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M180 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="170" y="412" width="20" height="16" rx="2"/>
+        <!-- board 2 -->
+        <path class="w" d="M315 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="315" cy="430" r="22"/><text class="xs" x="315" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M400 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="390" y="412" width="20" height="16" rx="2"/>
+        <!-- board 1 -->
+        <path class="w" d="M535 360V408" style="stroke:var(--w-mot);stroke-width:5"/>
+        <circle class="can" cx="535" cy="430" r="22"/><text class="xs" x="535" y="434" text-anchor="middle" style="fill:var(--ink)">N20</text>
+        <path class="w" d="M620 360V412" style="stroke:var(--ink-2);stroke-width:3.5"/>
+        <rect class="hall" x="610" y="412" width="20" height="16" rx="2"/>
+
+        <text class="sm" x="355" y="478" text-anchor="middle">Each board: N20 motor on the J4 pads (6 wires, same order as board 1: M1 GND A B 3V3 M2) or J3 with a ZH cable · A3144 hall on J5</text>
+      </g>
+
+      <!-- ============ 12 V supply ============ -->
+      <rect class="psu" x="700" y="20" width="160" height="60" rx="5"/>
+      <text class="title" x="780" y="44" text-anchor="middle">12 V supply</text>
+      <text class="sm" x="780" y="60" text-anchor="middle">bench PSU, ≥ 2 A</text>
+      <text class="pn" x="725" y="76" text-anchor="middle" style="fill:var(--w-12)">+</text>
+      <text class="pn" x="775" y="76" text-anchor="middle">−</text>
+
+      <!-- ============ RS-485 adapter ============ -->
+      <rect class="mod" x="820" y="140" width="120" height="200" rx="5"/>
+      <text class="title" x="880" y="158" text-anchor="middle">MAX3485</text>
+      <text class="xs" x="880" y="171" text-anchor="middle">3.3 V RS-485 module</text>
+      <g class="pn">
+        <text x="828" y="204">A</text><text x="828" y="224">B</text>
+        <g text-anchor="end">
+          <text x="934" y="184">GND</text><text x="934" y="204">VCC</text>
+          <text x="934" y="244">RXD</text><text x="934" y="284">EN</text><text x="934" y="314">TXD</text>
+        </g>
+      </g>
+      <text class="xs" x="880" y="332" text-anchor="middle">go by printed labels</text>
+
+      <!-- ============ ESP32 ============ -->
+      <rect class="board" x="1010" y="130" width="120" height="250" rx="6"/>
+      <text class="title" x="1070" y="150" text-anchor="middle" data-t="name">ESP32</text>
+      <text class="xs" x="1070" y="163" text-anchor="middle" data-t="sub">DevKit V1 (n20-bench)</text>
+      <g class="pn">
+        <text x="1018" y="184">GND</text><text x="1018" y="204" data-t="v33">3V3</text>
+        <text x="1018" y="244" data-t="rx">GPIO16</text><text x="1018" y="284">GPIO4</text><text x="1018" y="314" data-t="tx">GPIO17</text><text x="1018" y="364" data-t="en">GPIO18</text>
+      </g>
+      <g class="xs"><text x="1078" y="244" data-t="rxu">RX2</text><text x="1078" y="314" data-t="txu">TX2</text></g>
+      <rect class="usb" x="1056" y="372" width="28" height="14" rx="2"/>
+      <path class="w" d="M1070 386V430" style="stroke:var(--ink-3);stroke-width:4"/>
+      <text class="sm" x="1070" y="448" text-anchor="middle" data-t="usb">USB to PC (COM4)</text>
+      <text class="xs" x="1070" y="462" text-anchor="middle">powers the ESP + adapter</text>
+
+      <!-- ============ wires ============ -->
+      <!-- +12V -->
+      <path class="w" d="M686 160H725V80" style="stroke:var(--w-12)"/>
+      <!-- GND: J1 pin 2 to PSU −, then over the module to the module/ESP GND wire -->
+      <path class="w" d="M686 180H800V120H990V180M775 180V80" style="stroke:var(--w-gnd)"/>
+      <circle class="dot" cx="990" cy="180" r="3.5" style="fill:var(--w-gnd)"/>
+      <circle class="dot" cx="775" cy="180" r="3.5" style="fill:var(--w-gnd)"/>
+      <!-- A / B -->
+      <path class="w" d="M686 200H820" style="stroke:var(--w-a)"/>
+      <path class="w" d="M686 220H820" style="stroke:var(--w-b)"/>
+      <!-- ENUM: host GPIO into board 1's ENUM_IN, routed under the adapter -->
+      <path class="w" d="M686 240H760V360H1010" style="stroke:var(--w-enum)"/>
+      <!-- adapter to ESP -->
+      <path class="w" d="M940 180H1010" style="stroke:var(--w-gnd)"/>
+      <path class="w" d="M940 200H1010" style="stroke:var(--w-33)"/>
+      <path class="w" d="M940 240H1010" style="stroke:var(--w-rx)"/>
+      <path class="w" d="M940 280H1010" style="stroke:var(--w-de)"/>
+      <path class="w" d="M940 310H1010" style="stroke:var(--w-tx)"/>
+
+      <!-- wire labels -->
+      <g class="wl halo">
+        <text x="740" y="196" style="fill:var(--w-a)">A</text>
+        <text x="740" y="236" style="fill:var(--w-b)">B</text>
+        <text x="975" y="216" text-anchor="middle" style="fill:var(--w-33)">3.3 V</text>
+        <text x="975" y="298" text-anchor="middle" style="fill:var(--w-de)">EN</text>
+        <text x="880" y="356" text-anchor="middle" style="fill:var(--w-enum)">ENUM (3.3 V logic)</text>
+      </g>
+    </svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--w-12)"></i>+12 V</span>
+      <span><i style="background:var(--w-gnd)"></i>GND (all common)</span>
+      <span><i style="background:var(--w-a)"></i>RS-485 A</span>
+      <span><i style="background:var(--w-b)"></i>RS-485 B</span>
+      <span><i style="background:var(--w-33)"></i>3.3 V from ESP</span>
+      <span><i style="background:var(--w-rx)"></i>RXD → RX</span>
+      <span><i style="background:var(--w-tx)"></i>TX → TXD</span>
+      <span><i style="background:var(--w-de)"></i>EN (send/receive)</span>
+      <span><i style="background:var(--w-enum)"></i>ENUM → board 1</span>
+      <span class="dim">dashed = bus passing through each board</span>
+    </div>
+  </figure>
+
+  <section class="col">
+    <h2>Connections</h2>
+    <div class="tbl"><table>
+      <tr><th>From</th><th>To</th><th>Wire</th></tr>
+      <tr><td class="m">PSU +12 V</td><td class="m">Board 1 J1 pin 1 (top)</td><td><span class="sw" style="background:var(--w-12)"></span>female Dupont onto the header pin</td></tr>
+      <tr><td class="m">PSU −</td><td class="m">Board 1 J1 pin 2</td><td><span class="sw" style="background:var(--w-gnd)"></span>same pin also goes to adapter GND (or any ESP GND pin)</td></tr>
+      <tr><td class="m">Adapter A</td><td class="m">Board 1 J1 pin 3</td><td><span class="sw" style="background:var(--w-a)"></span>screw terminal → Dupont</td></tr>
+      <tr><td class="m">Adapter B</td><td class="m">Board 1 J1 pin 4</td><td><span class="sw" style="background:var(--w-b)"></span></td></tr>
+      <tr><td class="m" data-t="enrow">ESP32 GPIO18</td><td class="m">Board 1 J1 pin 5</td><td><span class="sw" style="background:var(--w-enum)"></span>ENUM: host starts the chain. 3.3 V only, <b>never 12 V</b>. Boards 2/3 get theirs through J2→J1</td></tr>
+      <tr><td class="m">Adapter VCC</td><td class="m" data-t="v33row">ESP32 3V3</td><td><span class="sw" style="background:var(--w-33)"></span><b>not</b> VIN/5V</td></tr>
+      <tr><td class="m">Adapter GND</td><td class="m">ESP32 GND</td><td><span class="sw" style="background:var(--w-gnd)"></span>the module has one GND pin: the J1 pin 2 wire goes here too</td></tr>
+      <tr><td class="m">Adapter RXD</td><td class="m" data-t="rxrow">ESP32 GPIO16 (RX2)</td><td><span class="sw" style="background:var(--w-rx)"></span></td></tr>
+      <tr><td class="m">Adapter EN</td><td class="m" data-t="derow">ESP32 GPIO4</td><td><span class="sw" style="background:var(--w-de)"></span>send/receive switch</td></tr>
+      <tr><td class="m">Adapter TXD</td><td class="m" data-t="txrow">ESP32 GPIO17 (TX2)</td><td><span class="sw" style="background:var(--w-tx)"></span></td></tr>
+      <tr><td class="m">Board 1 J2</td><td class="m">Board 2 J1</td><td class="dim">plug together directly</td></tr>
+      <tr><td class="m">Board 2 J2</td><td class="m">Board 3 J1</td><td class="dim">plug together directly</td></tr>
+    </table></div>
+    <p class="note" style="margin-top:12px">This is the 5-pin module (<code>EN VCC RXD TXD GND</code> on one side, A / B on the other). Go by the printed labels, not by position. <b>Modules don't answer?</b> Swap the TXD and RXD wires: some sellers label them backwards. Swapping is harmless.</p>
+    <p class="note" data-t="boardnote" hidden></p>
+  </section>
+
+  <section class="col">
+    <h2>Shopping list (Amazon)</h2>
+    <div class="tbl"><table>
+      <tr><th>Item</th><th>Search for</th><th>Check</th></tr>
+      <tr><td><b>RS-485 adapter</b> (needed)</td><td class="m">MAX3485 TTL to RS485 module</td>
+          <td>Chip marked <b>MAX3485</b> or <b>SP3485</b> (3.3 V). Pins labelled RO / RE / DE / DI. Usually a 5-pack for ~$8–10. <b>Not</b> the blue “MAX485” boards (5 V parts). Skip the “automatic flow control / no DE pin” boards too: they are often unreliable above 115200 baud.</td></tr>
+      <tr><td>Dupont jumpers (if you're low)</td><td class="m">female to female jumper wires 10 cm</td><td>For J1 pins and the adapter headers.</td></tr>
+      <tr><td>ZH motor cables (optional)</td><td class="m">JST ZH 1.5mm 6 pin cable double ended</td><td>Must be <b>same-direction (pin 1 to pin 1)</b>, not reversed. Only needed to test J3; the J4 pads work without it.</td></tr>
+    </table></div>
+    <p class="dim" style="margin-top:10px; font-size:13.5px">No-purchase fallback: a 4th board can stand in for the adapter (ESP TX/RX on its J6 pads 6/7, 12 V into its J1, board 1 plugs into its J2).</p>
+  </section>
+
+  <section class="col">
+    <h2>Bring-up order</h2>
+    <ol class="steps">
+      <li>Boards 2 and 3: unpowered shorts check, power-up, flash, LED. Same as board 1 (DESIGN-1 §14.1 step 2).</li>
+      <li>Flash each board with its own address build (<code>firmware/module</code> envs <code>node1</code>–<code>node3</code>).</li>
+      <li>Board 1 alone on the adapter: <code>1 ping</code>, <code>1 home</code>.</li>
+      <li>ENUM check (once the host drives the ENUM pin): <code>s</code> shows <code>enum 1</code> on board 1 with the pin high, 0 with it low.</li>
+      <li>Plug in boards 2 and 3, set the JP_TERM shunt on board 3, then <code>s</code> (status of all), <code>* home</code>, <code>* go 17</code>.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+  // Pin sets match firmware/controller/lib/sfctl/src/sfctl.cpp defaultPins() (CONFIG_IDF_TARGET_ESP32 vs S3/C3).
+  const BOARDS = {
+    esp32: { name: "ESP32", sub: "DevKit V1 (n20-bench)", rx: "GPIO16", tx: "GPIO17", en: "GPIO18", v33: "3V3", rxu: "RX2", txu: "TX2",
+             usb: "USB to PC", flash: "pio run -t upload", note: "" },
+    s3:    { name: "ESP32-S3", sub: "DevKitC-1 or Super Mini", rx: "GPIO5", tx: "GPIO6", en: "GPIO7", v33: "3V3", rxu: "RX1", txu: "TX1",
+             usb: "native USB to PC", flash: "pio run -e s3 -t upload",
+             note: "S3: on a DevKitC-1 plug into the port marked <b>USB</b>, not UART, or the console stays silent. On a Super Mini the pins are printed as just <code>4 5 6</code>. If upload can't find the port, hold BOOT, tap RST, release BOOT." },
+    c3:    { name: "ESP32-C3", sub: "Super Mini or DevKitM-1", rx: "GPIO5", tx: "GPIO6", en: "GPIO7", v33: "3.3", rxu: "RX1", txu: "TX1",
+             usb: "native USB to PC", flash: "pio run -e c3 -t upload",
+             note: "C3 Super Mini: pins are printed as plain numbers (<code>4 5 6 7</code>) and the 3.3 V pin as <code>3.3</code>. Avoid GPIO2, 8 and 9 (boot pins; 8 is the Super Mini's LED) and 20/21 (boot log comes out there). 4/5/6 are clear. If upload can't find the port, hold BOOT (GPIO9), tap RST, release BOOT." },
+  };
+  function setBoard(k) {
+    const b = BOARDS[k] || BOARDS.esp32;
+    const set = (t, v) => document.querySelectorAll('[data-t="' + t + '"]').forEach(e => e.textContent = v);
+    ["name", "sub", "rx", "tx", "en", "v33", "rxu", "txu", "usb", "flash"].forEach(t => set(t, b[t]));
+    set("rxrow", b.name + " " + b.rx + " (" + b.rxu + ")");
+    set("txrow", b.name + " " + b.tx + " (" + b.txu + ")");
+    set("enrow", b.name + " " + b.en);
+    set("v33row", b.name + " " + b.v33);
+    set("derow", b.name + " GPIO4");
+    const n = document.querySelector('[data-t="boardnote"]');
+    n.innerHTML = b.note; n.hidden = !b.note;
+    document.querySelectorAll("[data-board]").forEach(e => e.setAttribute("aria-pressed", e.dataset.board === k));
+    try { localStorage.setItem("sf-bench-board", k); } catch (e) {}
+  }
+  document.querySelectorAll("[data-board]").forEach(e => e.addEventListener("click", () => setBoard(e.dataset.board)));
+  // ?board=esp32|s3|c3 overrides; otherwise the last choice, else the C3 (current bench board).
+  let saved = "c3";
+  try { saved = localStorage.getItem("sf-bench-board") || "c3"; } catch (e) {}
+  const q = new URLSearchParams(location.search).get("board");
+  if (q && BOARDS[q]) saved = q;
+  setBoard(saved);
+</script>
