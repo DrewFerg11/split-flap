@@ -18,6 +18,7 @@ static Preferences    prefs;
 static bool           knownAddr[MAX_ADDR + 1];
 static int32_t        saved[MAX_ADDR + 1][K_COUNT];
 static bool           savedValid[MAX_ADDR + 1];
+static bool           pushPending[MAX_ADDR + 1];   // reset seen, stored settings not fully pushed yet
 static uint32_t       timeoutCount = 0;
 
 static void serialLog(const char *fmt, ...) {
@@ -113,27 +114,36 @@ void clearTimeouts() { timeoutCount = 0; }
 
 // ------------------------------------------------------------ modules ---
 
-bool known(uint8_t addr) { return addr >= 1 && addr <= MAX_ADDR && knownAddr[addr]; }
-void setKnown(uint8_t addr, bool k) { if (addr >= 1 && addr <= MAX_ADDR) knownAddr[addr] = k; }
+// One module's address (not broadcast): everything indexed per address checks this first.
+static bool inRange(uint8_t addr) { return addr >= 1 && addr <= MAX_ADDR; }
 
-bool hasSaved(uint8_t addr) { return addr >= 1 && addr <= MAX_ADDR && savedValid[addr]; }
+bool known(uint8_t addr) { return inRange(addr) && knownAddr[addr]; }
+void setKnown(uint8_t addr, bool k) { if (inRange(addr)) knownAddr[addr] = k; }
 
-static void pushSaved(uint8_t addr) {
-  if (!savedValid[addr]) return;
+bool hasSaved(uint8_t addr) { return inRange(addr) && savedValid[addr]; }
+
+// The module clears F_FRESH on the first SET it accepts, so F_FRESH can't tell whether a push finished:
+// pushPending stays set until every key has gone through, and getStatus() retries until it has.
+static bool pushSaved(uint8_t addr) {
+  if (!savedValid[addr]) { pushPending[addr] = false; return true; }
+  pushPending[addr] = true;
   Frame f;
   for (int k = 0; k < K_COUNT; k++) {
     SetMsg m = { (uint8_t)k, saved[addr][k] };
-    if (!request(addr, C_SET, f, &m, sizeof m)) { say("[%u] settings push failed\n", addr); return; }
+    if (!request(addr, C_SET, f, &m, sizeof m)) { say("[%u] settings push failed, will retry\n", addr); return false; }
   }
+  pushPending[addr] = false;
   say("[%u] module had reset: pushed its saved settings\n", addr);
+  return true;
 }
 
 bool getStatus(uint8_t addr, Status &s, uint8_t cmd, const void *p, uint8_t n) {
+  if (!inRange(addr)) return false;
   Frame f;
   if (!request(addr, cmd, f, p, n) || f.len < sizeof(Status)) return false;
   memcpy(&s, f.data, sizeof s);
   knownAddr[addr] = true;
-  if ((s.flags & F_FRESH) && savedValid[addr]) {
+  if (((s.flags & F_FRESH) || pushPending[addr]) && savedValid[addr]) {
     pushSaved(addr);
     Frame g;
     if (request(addr, C_STATUS, g) && g.len >= sizeof s) memcpy(&s, g.data, sizeof s);
@@ -142,6 +152,7 @@ bool getStatus(uint8_t addr, Status &s, uint8_t cmd, const void *p, uint8_t n) {
 }
 
 bool getCfg(uint8_t addr, int32_t *out) {
+  if (!inRange(addr)) return false;
   Frame f;
   if (!request(addr, C_GET, f) || f.len < sizeof(int32_t) * K_COUNT) return false;
   memcpy(out, f.data, sizeof(int32_t) * K_COUNT);
@@ -155,6 +166,7 @@ bool setKey(uint8_t addr, uint8_t key, int32_t value) {
 }
 
 bool ping(uint8_t addr, Ping &p, int tries) {
+  if (!inRange(addr)) return false;
   Frame f;
   if (!request(addr, C_PING, f, nullptr, 0, tries) || f.len < sizeof(Ping)) return false;
   memcpy(&p, f.data, sizeof p);
@@ -180,6 +192,7 @@ int scan(int maxAddr, void (*found)(uint8_t addr, const Ping &p)) {
 // ------------------------------------------------------------ settings ---
 
 void storeSettings(uint8_t addr, const int32_t *v) {
+  if (!inRange(addr)) return;
   char k[8]; key(k, sizeof k, addr);
   prefs.begin(NVS_NS, false); prefs.putBytes(k, v, sizeof(int32_t) * K_COUNT); prefs.end();
   memcpy(saved[addr], v, sizeof(int32_t) * K_COUNT); savedValid[addr] = true;
@@ -194,9 +207,11 @@ bool autoSave(uint8_t addr) {
 }
 
 void forget(uint8_t addr) {
+  if (!inRange(addr)) return;
   char k[8]; key(k, sizeof k, addr);
   prefs.begin(NVS_NS, false); prefs.remove(k); prefs.end();
   savedValid[addr] = false;
+  pushPending[addr] = false;
 }
 
 // A module that has reset still runs the compiled defaults. Reading its status makes getStatus() push its
@@ -242,7 +257,8 @@ void calibrate(uint8_t addr, int revs) {
     if (i) say("  rev %d: %ld counts\n", i, (long)(edges[i] - edges[i - 1]));
   }
   if (!ok) {
-    bool restored = setKey(addr, K_CPR, oldCpr) && setKey(addr, K_REST, v[K_REST]);
+    bool restored = setKey(addr, K_CPR, oldCpr);
+    restored = setKey(addr, K_REST, v[K_REST]) && restored;   // both attempted, whatever the first did
     if (restored) say("[%u] calibration abandoned, settings restored\n", addr);
     else say("[%u] calibration abandoned; restoring cpr/rest failed: check 'cfg' (cpr should be %ld)\n", addr, (long)oldCpr);
     return;
@@ -253,14 +269,19 @@ void calibrate(uint8_t addr, int revs) {
   // The slow zone, decel zone and brake lead were tuned in counts for 10856/rev: keep them the same share of a flap.
   int32_t zone = calib::rescale(v[K_ZONE], cpr, oldCpr), dzone = calib::rescale(v[K_DZONE], cpr, oldCpr);
   int32_t lead = calib::rescale(v[K_LEAD], cpr, oldCpr), foff = calib::rescale(v[K_FOFF], cpr, oldCpr);
-  bool written = setKey(addr, K_CPR, cpr) && setKey(addr, K_ZONE, zone) && setKey(addr, K_DZONE, dzone)
-              && setKey(addr, K_LEAD, lead) && setKey(addr, K_FOFF, foff) && setKey(addr, K_REST, v[K_REST]);
-  autoSave(addr);                              // stores what the module actually has, written or not
+  // Every write is attempted (rest must leave its temporary -1 even if another key failed). Only a
+  // complete set is stored; after a partial one the previous stored settings stay, so the module gets
+  // them back on its next reset.
+  const struct { uint8_t key; int32_t value; } w[] = {
+    {K_CPR, cpr}, {K_ZONE, zone}, {K_DZONE, dzone}, {K_LEAD, lead}, {K_FOFF, foff}, {K_REST, v[K_REST]} };
+  bool written = true;
+  for (const auto &kv : w) written = setKey(addr, kv.key, kv.value) && written;
   if (!written) {
-    say("[%u] measured cpr %ld, but not every setting reached the module: check 'cfg' and run cal again\n",
+    say("[%u] measured cpr %ld, but not every setting reached the module; nothing stored. Check 'cfg' and run cal again\n",
         addr, (long)cpr);
     return;
   }
+  autoSave(addr);
   say("[%u] cpr %ld counts/rev (was %ld; revs agree within %ld counts) = %.1f counts/flap\n",
        addr, (long)cpr, (long)oldCpr, (long)spread, (float)cpr / v[K_FLAPS]);
   say("[%u] scaled zone %ld, dzone %ld, lead %ld, foff %ld. Next: f 0, nudge with 'go <counts>', then 'here 0'. 'save' when done\n",

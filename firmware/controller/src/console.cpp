@@ -189,6 +189,7 @@ static void handle(const std::string &raw) {
     return;
   }
   else if (cmd == "forget") {
+    if (bcast) { Serial.println("needs an address"); return; }
     sfctl::forget(addr);
     Serial.printf("[%u] stored settings deleted (module keeps its current ones until reset)\n", addr);
     return;
