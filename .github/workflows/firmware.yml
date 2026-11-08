@@ -1,6 +1,6 @@
 # Unit tests + board builds for every PlatformIO project under firmware/ (and applications/).
 #   pio test -e native   when the project has an [env:native] (runs on the runner, no hardware)
-#   pio run              the project's default_envs: every board build must still compile
+#   pio run -e …         every env except native: every board build must still compile
 # Read-only: pull_request (not _target), so fork PRs run without secrets or write access.
 name: CI / Firmware
 
@@ -64,4 +64,7 @@ jobs:
           fi
       - name: Build boards
         working-directory: ${{ matrix.dir }}
-        run: pio run
+        run: |
+          envs=$(sed -n 's/^\[env:\([^]]*\)\]/\1/p' platformio.ini | grep -vx native)
+          echo "envs: $envs"
+          pio run $(printf -- '-e %s ' $envs)
