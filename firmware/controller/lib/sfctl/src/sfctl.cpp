@@ -281,7 +281,8 @@ void calibrate(uint8_t addr, int revs) {
         addr, (long)cpr);
     return;
   }
-  autoSave(addr);
+  if (!autoSave(addr))
+    say("[%u] the module has the new settings but storing them here failed: run 'save' before it resets\n", addr);
   say("[%u] cpr %ld counts/rev (was %ld; revs agree within %ld counts) = %.1f counts/flap\n",
        addr, (long)cpr, (long)oldCpr, (long)spread, (float)cpr / v[K_FLAPS]);
   say("[%u] scaled zone %ld, dzone %ld, lead %ld, foff %ld. Next: f 0, nudge with 'go <counts>', then 'here 0'. 'save' when done\n",
@@ -295,9 +296,10 @@ void markHere(uint8_t addr, int n) {
   if (!(s.flags & F_HOMED)) { say("[%u] not homed, run home first\n", addr); return; }
   int32_t foff = calib::foffForHere(v[K_FOFF], s.flapX100 / 100.0f, n, v[K_FLAPS], v[K_CPR]);
   if (!setKey(addr, K_FOFF, foff)) { say("[%u] no reply, foff unchanged\n", addr); return; }
-  autoSave(addr);
-  say("[%u] was reading flap %.2f; foff %ld -> %ld, so this is now flap %d (saved)\n",
-       addr, s.flapX100 / 100.0f, (long)v[K_FOFF], (long)foff, n);
+  bool stored = autoSave(addr);
+  say("[%u] was reading flap %.2f; foff %ld -> %ld, so this is now flap %d (%s)\n",
+       addr, s.flapX100 / 100.0f, (long)v[K_FOFF], (long)foff, n,
+       stored ? "saved" : "NOT stored here: run 'save' before the module resets");
 }
 
 }  // namespace sfctl
