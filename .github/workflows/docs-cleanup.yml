@@ -1,4 +1,4 @@
-# Removes a branch's docs preview (preview/<sanitised-branch>/ on gh-pages,
+# Removes a branch's docs preview (preview/<sanitised-branch>-<hash>/ on gh-pages,
 # published by docs-deploy.yml) when that branch is deleted, so preview/
 # doesn't accumulate a folder for every docs branch ever pushed. Adapted from
 # DrewFerg11/numbers-go-up's docs-cleanup.yml.
@@ -54,7 +54,11 @@ jobs:
         run: |
           # Keep this sanitiser identical to docs-deploy.yml's, or this looks
           # for a folder the deploy never created.
-          SAFE_BRANCH=$(printf '%s' "$BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          # BEGIN preview key
+          BRANCH_LABEL=$(printf '%s' "$BRANCH" | LC_ALL=C sed 's/[^a-zA-Z0-9._-]/-/g' | cut -c1-80)
+          BRANCH_HASH=$(printf '%s' "$BRANCH" | sha256sum | cut -c1-16)
+          SAFE_BRANCH="$BRANCH_LABEL-$BRANCH_HASH"
+          # END preview key
           PREVIEW_DIR="preview/$SAFE_BRANCH"
 
           git config user.name "github-actions[bot]"

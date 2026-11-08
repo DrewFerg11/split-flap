@@ -13,6 +13,7 @@ Before opening a PR:
 
 ```sh
 npm run check
+npm run test:previews
 npm run build
 npm run verify
 ```
@@ -50,8 +51,11 @@ branch prefixes build without deploying. Manual runs are also available.
 Actions are pinned by commit; update their version comments with the pins.
 
 Main replaces the site root on `gh-pages`. Supported preview branches publish
-to `preview/<sanitised-branch>/`: `feat/pages-site` becomes
-`preview/feat-pages-site/`. Same-repository PRs receive one sticky preview
+to `preview/<sanitised-branch>-<hash>/`. The readable portion is capped at
+80 characters; a 16-character SHA-256 suffix of the original branch name
+distinguishes names such as `feat/a-b` and `feat/a/b`. Both workflows use
+the same mapping, checked by `npm run test:previews`.
+Same-repository PRs receive one sticky preview
 comment after a successful deployment.
 
 `SITE_BUILD_URL` sets the full output URL, including the preview base path.
