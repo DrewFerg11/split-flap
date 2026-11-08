@@ -6,16 +6,18 @@ seasons; check them before printing flaps, because expansion is frequent.
 
 ## The display, as built
 
+Updated 2026-11-08 for the 52-flap drums (written for 40); every league below still fits, with more spare.
+
 **Use for 20+ team leagues (Drew):** the main use is **live scores**, not the full table. The 6-game
-live layout works the same at any league size; only the name-flap budget (≤ 40) limits it.
+live layout works the same at any league size; only the name-flap budget (44 text flaps) limits it.
 
 | Resource | Value | Consequence |
 |---|---|---|
 | Rows | **20–21** for the EPL build (21 likely: header row); code and hardware designed to **expand past 20** (Drew, 2026-10-15) | Rows are the soft limit. A bigger league needs more rows (cost, wall space), or a split (conference, division, top 20). |
-| Name module | **40 flaps** per row, and every row has the **same** set | Teams + status words + headers + blank must total ≤ 40. |
+| Name module | **52 flaps** per row, and every row has the **same** set | Flap 0 is the blank (home), 45 the divider and 46-51 the colour flaps ([flap-sets.md](flap-sets/flap-sets.md)), which leaves **44 text flaps**: teams + status words + headers must fit in 44. |
 | Number column | **2 digit modules** = one number **0–99** per row | One stat per row: points *or* wins, not W–L. Scores ≥ 100 don't fit. |
 | Digit symbols | − ↑ ↓ and colour flaps (see [flap-sets.md](flap-sets/flap-sets.md)) | Goal difference to −99, movement arrows. |
-| Changing league | Flaps are printed per league | 20 rows × 40 = **800 name flaps** per league. A league change is a re-flap, not a setting. |
+| Changing league | Flaps are printed per league | 20 rows × 52 = **1040 name flaps** per league. A league change is a re-flap, not a setting. |
 
 ### Two ways to use the rows
 
@@ -25,7 +27,7 @@ live layout works the same at any league size; only the name-flap budget (≤ 40
   **6 games** fit in 18 rows, plus 2 header rows (e.g. `NFL` / `WEEK` + 12). Busier slates cycle.
 
 Using a status word plus a digit (`QTR` + 3, `TOP` + 7) keeps the status flap count small, which
-is what lets the 30–32 team leagues fit in 40 flaps.
+is what lets the 30–32 team leagues fit in the 44 text flaps.
 
 ## Summary
 
@@ -38,12 +40,12 @@ is what lets the 30–32 team leagues fit in 40 flaps.
 | Bundesliga, Ligue 1 | 18 | ✅ | ✅ | — |
 | **MLS** | 30 | ⚠️ one conference (15) | ✅ | 30 rows for the full table |
 | **NWSL** | 16 | ✅ points | ✅ | — |
-| **NFL** | 32 | ⚠️ one conference (16), wins only | ✅ | No W–L; 39 of 40 flaps used |
+| **NFL** | 32 | ⚠️ one conference (16), wins only | ✅ | No W–L; 39 of 44 text flaps used |
 | **NHL** | 32 | ⚠️ wins, or points until ~99 | ✅ | Top teams pass 100 points |
 | **MLB** | 30 | ⚠️ one league (15), wins until 99 | ✅ | 100-win teams most seasons |
 | **NBA** | 30 | ✅ one conference (15), wins | ❌ | Most scores are 100+ |
 | **WNBA** | 15 | ✅ wins | ✅ mostly | Rare 100+ scores |
-| **College football (FBS)** | 136 | ⚠️ one conference | ⚠️ one conference's games | Too many teams for 40 flaps |
+| **College football (FBS)** | 136 | ⚠️ one conference | ⚠️ one conference's games | Too many teams for 44 text flaps |
 | **Men's college basketball** | 365 | ⚠️ one conference | ⚠️ occasional 100+ | Too many teams |
 | **Women's college basketball** | 360+ | ⚠️ one conference | ✅ | Too many teams |
 | CFL | 9 | ✅ | ✅ | — |
@@ -56,7 +58,7 @@ is what lets the 30–32 team leagues fit in 40 flaps.
 
 ### NFL — good for live games
 - **Teams:** 32 (2 conferences × 4 divisions × 4).
-- **Flap budget:** 32 nicknames + `QTR`, `HALFTIME`, `OT`, `FINAL`, `FINAL OT`, `NFL` header, blank = **39 / 40**.
+- **Flap budget:** 32 nicknames + `QTR`, `HALFTIME`, `OT`, `FINAL`, `FINAL OT`, `NFL` header, blank = **39 / 44**.
   Use nicknames (`CHIEFS`, `49ERS`), not city + nickname.
 - **Live:** scores are always < 100 (record 73). Quarter number on the digits. 6 games at a time;
   a Sunday 1 pm slate (8–10 games) cycles.
@@ -71,7 +73,7 @@ is what lets the 30–32 team leagues fit in 40 flaps.
 
 ### MLB — good for live games
 - **Teams:** 30 (2 leagues × 3 divisions × 5).
-- **Flap budget:** 30 + `TOP`, `MID`, `BOT`, `END`, `FINAL`, `DELAYED`, `POSTPONED`, `MLB`, blank = **39 / 40**.
+- **Flap budget:** 30 + `TOP`, `MID`, `BOT`, `END`, `FINAL`, `DELAYED`, `POSTPONED`, `MLB`, blank = **39 / 44**.
   Inning number on the digits (extras still fit).
 - **Live:** scores ✅ (record 30).
 - **Standings:** one league = 15 rows + 3 division headers ✓. **Wins pass 99** for 1–3 teams most
@@ -79,7 +81,7 @@ is what lets the 30–32 team leagues fit in 40 flaps.
 
 ### NHL — good for live games
 - **Teams:** 32 (2 conferences × 16).
-- **Flap budget:** 32 + `PERIOD`, `INT`, `OT`, `SO`, `FINAL`, `NHL`, blank = **39 / 40**.
+- **Flap budget:** 32 + `PERIOD`, `INT`, `OT`, `SO`, `FINAL`, `NHL`, blank = **39 / 44**.
 - **Live:** scores ✅.
 - **Standings:** one conference = 16 rows ✓. **Points pass 100** for the top 5–10 teams each season
   (record 135), so late-season points tables break. Wins (max ~65) always fit.
@@ -99,7 +101,7 @@ is what lets the 30–32 team leagues fit in 40 flaps.
 
 ## College
 
-The team count, not the rows, is the problem: every row carries the same 40 flaps, so a display
+The team count, not the rows, is the problem: every row carries the same 44 text flaps, so a display
 can only know **one conference** (or two small ones).
 
 ### College football (FBS, 136 teams)
