@@ -31,3 +31,6 @@ dist/
 # Module mechanics (CAD, scripts, print files): kept local until 3D-model distribution is decided
 hardware/modules/
 hardware/modules/design-log.md
+
+# Local agent notes
+CLAUDE.local.md
