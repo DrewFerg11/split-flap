@@ -416,14 +416,14 @@ renders and review images in `images/`, ERC/DRC reports, `netlist.txt`.
 
 So the motor pin order is still unconfirmed. Safe next step is first power on a current-limited
 supply; with the motor connected, if the encoder's pin order is reversed it would put 3.3 V on its GND,
-so read J3 pin 5 against J3 pin 2 with no motor first. Bring-up firmware: `firmware/ltm-bringup/` (builds; not yet flashed).
+so read J3 pin 5 against J3 pin 2 with no motor first. Bring-up firmware: [`firmware/bringup/`](../../../firmware/bringup/) (builds; not yet flashed).
 Annotated probe-point picture: `images/bringup-meter-points.png`.
 
 **Later 2026-10-27, board #1:** first power OK (12 V, supply current display 0, 3.33 V on 3V3, Q1/U4 not warm). ST-Link V2 clone needed a WinUSB driver (Zadig) before OpenOCD could open it. SWD flash over J6 works (verified OK; PIO board `nucleo_g031k8`, upload `stlink`). LED D2 lights (PC15 high), so D2's orientation is right.
-Firmware lessons (`firmware/ltm-bringup`): this Arduino core mis-reads a raw `PC_15`/`PA_x` PinName in `pinMode()` (configured the wrong pin), and `HardwareTimer::setPWM(PA_6/PA_7)` hangs in `setMode`. LED and PWM pins are now set up by register/HAL, hall/ISEN via `pinNametoDigitalPin()`.
+Firmware lessons (`firmware/bringup`): this Arduino core mis-reads a raw `PC_15`/`PA_x` PinName in `pinMode()` (configured the wrong pin), and `HardwareTimer::setPWM(PA_6/PA_7)` hangs in `setMode`. LED and PWM pins are now set up by register/HAL, hall/ISEN via `pinNametoDigitalPin()`.
 Debug trick: halt over SWD and read GPIO registers with openocd (`read_memory 0x50000814 32 1` = GPIOC ODR).
 
-**Later still, board #1 (bring-up passed):** hall (A3144 on J5) pulls the LED solid with a magnet. Motor on the **J4 pads** (not J3), wire order read from the motor's encoder-board silkscreen: matches J3/J4 (M1 GND A B 3V3 M2), so **open item 2a is resolved**. Encoder counts hand-turned and under power. `firmware/ltm-bringup` env `autotest` (motor 50 % fwd 1 s, rev 1 s, LED reports): **3 blinks = pass**, forward counts rose and reverse fell, so TIM2 sign and motor direction agree with no flip needed.
+**Later still, board #1 (bring-up passed):** hall (A3144 on J5) pulls the LED solid with a magnet. Motor on the **J4 pads** (not J3), wire order read from the motor's encoder-board silkscreen: matches J3/J4 (M1 GND A B 3V3 M2), so **open item 2a is resolved**. Encoder counts hand-turned and under power. `firmware/bringup` env `autotest` (motor 50 % fwd 1 s, rev 1 s, LED reports): **3 blinks = pass**, forward counts rose and reverse fell, so TIM2 sign and motor direction agree with no flip needed.
 Not yet checked on this board: ISEN current reading, RS-485, ENUM chain, a second board in the chain, motor on J3 via the ZH cable, 25 % duty startup (the motor did not start in 1 s at 25 %; 50 % does).
 Firmware lesson 3: `HardwareTimer::resume()` with no bound pin leaves TIM3 stopped and its outputs disabled; set `TIM3->CCER` and `CR1.CEN` directly.
 
@@ -431,7 +431,7 @@ Firmware lesson 3: `HardwareTimer::resume()` with no bound pin leaves TIM3 stopp
 
 Board #1 works end to end on the bench. Picture aids in `images/`: `bringup-meter-points.png` (probe points J1/J6/J3), `bringup-led-d2.png`, `bringup-current-measure.png`. Bench: ST-Link V2 clone (needs the Zadig WinUSB driver), 12 V bench supply, Crenova MS8233D meter (mA jack is the right-hand one, red lead back to VOhm after).
 Next, in order:
-1. Re-flash board #1 with `pio run -e ltm -t upload` (the `autotest` build is on it and spins the motor 10 s after every reset).
+1. Re-flash board #1 with `pio run -e bringup -t upload` (in `firmware/bringup`) (the `autotest` build is on it and spins the motor 10 s after every reset).
 2. Repeat the unpowered shorts check (J1 pin 1 to 2, J6 pad 1 to 5), power-up and flash on boards #2-#10. Look at D2 and the hall/J3 connectors too.
 3. Move the motor from the J4 pads to J3 with a ZH cable once one is available (J3 untested with a motor).
 4. Read ISEN (PA4, 0.33 ohm sense) under a held motor and set the jam threshold; fix the 25 % startup.
