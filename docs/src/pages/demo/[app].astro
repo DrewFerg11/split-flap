@@ -1,0 +1,22 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getDemos } from '../../lib/demos';
+
+export function getStaticPaths() {
+  return getDemos().map((demo) => ({ params: { app: demo.slug }, props: { demo } }));
+}
+const { demo } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<StarlightPage frontmatter={{
+  title: demo.title + ' demo',
+  description: demo.description,
+  template: 'splash',
+  head: [{ tag: 'link', attrs: { rel: 'stylesheet', href: base + 'demo/engine/demo.css' } }],
+}}>
+  <!-- Keep Starlight's prose spacing out of the physical module layout. -->
+  <div class="not-content" data-splitflap-demo><p>Loading the display demo…</p></div>
+  <noscript><p>This interactive display needs JavaScript. Sample data stays in your browser.</p></noscript>
+  <script is:inline type="module" src={base + 'demo/' + demo.slug + '/app.js'}></script>
+</StarlightPage>

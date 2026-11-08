@@ -14,6 +14,7 @@ Before opening a PR:
 ```sh
 npm run check
 npm run test:previews
+npm run test:demo
 npm run build
 npm run verify
 ```
@@ -28,12 +29,21 @@ deployment paths. Use `npm run preview` to inspect the exported site.
 - Write guides in `src/content/docs/` as Markdown. Use MDX for pages that
   need Starlight's built-in cards, grids, tabs, or steps.
 - Update the sidebar in `astro.config.mjs` when adding a guide.
+  Starlight adds the configured base to sidebar `link` values itself.
+  Use site-root paths there (such as `/demo/premier-league/`); raw HTML
+  anchors and custom Astro components need `import.meta.env.BASE_URL`.
 - The homepage is `src/content/docs/index.mdx`; its image is the project's own
   KiCad render at `../pcb/module-board/fab/images/league-table-module-v0.1-3d.png`.
   The workflow watches that source image too. Theme adjustments live in `src/styles/extra.css`.
   Prefer Starlight components to custom replacements.
-- Add standalone demos under `public/demo/<slug>/`. Astro copies public
-  files unchanged. The Premier League demo is a separate follow-up.
+- Add demos under `public/demo/<slug>/` with a `manifest.json` (title and
+  description) and `app.js`. Astro copies the ES modules unchanged, and the
+  generic route and demo list discover the manifest automatically. Reuse
+  `public/demo/engine/` for board rendering, font metrics, validation, and
+  forward-only motion. See the Premier League folder's README for port notes.
+- `npm run test:demo` checks drum traversal, interruptions, unknown targets,
+  a board larger than 20 rows, and every Premier League view in both seasons
+  and clock modes. The engine has no league-specific names or row counts.
 - `public/assets/fonts/fonts.css` provides local fonts for the site and demos.
   Keep their license texts and third-party notices.
 - Keep runtime resources local: no remote fonts, scripts, analytics, or APIs.
@@ -89,4 +99,4 @@ never put generated documentation at that deployment path.
 3. Run `Docs / Deploy` on `main` and the preview branch.
 
 Until `gh-pages` exists, deployment skips with a notice after a successful build.
-This PR does not change repository settings or create the publishing branch.
+The publishing branch and Pages settings were configured on 2026-11-08.
