@@ -18,4 +18,6 @@ published on MakerWorld and linked from the release.
 | [`rail/`](rail/) | the trunk up the side of the board: 12 V + bus to every row (research, leaning to idea A) |
 | [`parts-shortlist.md`](parts-shortlist.md) | module parts: the N20 encoder motor and its sources |
 
-The digit and name modules (CAD, scripts, print files) aren't migrated yet. Nothing released yet.
+The digit and name modules (CAD, generation scripts, print files) live in `modules/`, which is
+**git-ignored for now**: it's kept on the development machine until it's decided how the 3D model
+files are distributed. Nothing released yet.
