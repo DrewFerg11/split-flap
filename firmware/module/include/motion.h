@@ -10,6 +10,12 @@ namespace motion {
 
 inline float countsPerFlap(int32_t cpr, int32_t flaps) { return (float)cpr / flaps; }
 
+// Encoder counts come from the free-running 32-bit TIM2 and wrap past INT32_MAX in long service.
+// Positions are compared only through these: modular 32-bit arithmetic, well defined (no signed
+// overflow) and exact across the wrap while the two positions are less than 2^31 counts apart.
+inline int32_t countDiff(int32_t a, int32_t b) { return (int32_t)((uint32_t)a - (uint32_t)b); }   // a - b
+inline int32_t countAdd(int32_t a, int64_t d) { return (int32_t)((uint32_t)a + (uint32_t)d); }    // a + d
+
 // Flap number folded into 0..flaps-1 (so -1 is the last flap).
 inline int wrapFlap(int flap, int flaps) { return ((flap % flaps) + flaps) % flaps; }
 
@@ -18,15 +24,15 @@ inline int wrapFlap(int flap, int flaps) { return ((flap % flaps) + flaps) % fla
 // a long time since homing costs nothing (it used to step one revolution per loop pass).
 inline int32_t flapTarget(int32_t hallZero, int32_t foff, int32_t cpr, int32_t flaps, int32_t lead,
                           int flap, int32_t now) {
-  int64_t base = (int64_t)hallZero + foff + lroundf(flap * countsPerFlap(cpr, flaps));
-  int64_t d = (int64_t)now + lead - base;                 // smallest k with base + k*cpr > now + lead
+  int32_t base = countAdd(countAdd(hallZero, foff), lroundf(flap * countsPerFlap(cpr, flaps)));
+  int64_t d = (int64_t)countDiff(now, base) + lead;       // smallest k with base + k*cpr > now + lead
   int64_t k = (d >= 0 ? d / cpr : -((-d + cpr - 1) / cpr)) + 1;
-  return (int32_t)(base + k * cpr);
+  return countAdd(base, k * cpr);
 }
 
 // Flap showing at encoder count `count`, 0 <= result < flaps (fractional between flaps).
 inline float currentFlap(int32_t count, int32_t hallZero, int32_t foff, int32_t cpr, int32_t flaps) {
-  float f = fmodf((count - hallZero - foff) / countsPerFlap(cpr, flaps), flaps);
+  float f = fmodf(countDiff(countDiff(count, hallZero), foff) / countsPerFlap(cpr, flaps), flaps);
   return f < 0 ? f + flaps : f;
 }
 

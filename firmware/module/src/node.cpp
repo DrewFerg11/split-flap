@@ -183,7 +183,7 @@ static void goFlap(int flap) {
 
 static void moveBy(int32_t delta) {
   if (delta <= 0) return;                      // forward only: flaps only fall one way
-  target = enc() + delta;
+  target = motion::countAdd(enc(), delta);
   targetFlap = 255;
   startMotion(M_MOVE, cfg[K_FAST]);
 }
@@ -283,7 +283,7 @@ static void testStep(uint32_t now) {
     setDuty(0);
     testStage = 0;
     mode = M_IDLE;
-    int32_t fwd = testC1 - testC0, back = c2 - testC1;
+    int32_t fwd = motion::countDiff(testC1, testC0), back = motion::countDiff(c2, testC1);
     lastErr = fwd; aux = back;
     stopReason = motion::testVerdict(fwd, back);
   }
@@ -351,7 +351,7 @@ void loop() {
   }
 
   if (mode == M_MOVE) {
-    int32_t remaining = target - c;
+    int32_t remaining = motion::countDiff(target, c);
     int fast = cfg[K_FAST], slow = cfg[K_SLOW], zone = cfg[K_ZONE], dzone = cfg[K_DZONE];
     if (remaining <= cfg[K_LEAD]) {
       stopReason = R_DONE;
@@ -363,7 +363,7 @@ void loop() {
   } else if (mode == M_HOMING) {
     int duty = rampUpDuty(cfg[K_HOME], now);
     if (duty != dutyPct) setDuty(duty);
-    if (c - moveStartCount > 2 * cfg[K_CPR]) stopNow(R_NOHALL);
+    if (motion::countDiff(c, moveStartCount) > 2 * cfg[K_CPR]) stopNow(R_NOHALL);
   } else if (mode == M_DRIVE) {
     if (now - moveStartMs > DRIVE_MAX_MS) stopNow(R_TIMEOUT);
   } else if (mode == M_TEST) {
@@ -381,10 +381,10 @@ void loop() {
     setDuty(0);
     mode = M_IDLE;
     if (settleKind == S_HOME) {
-      aux = c - hallZero;
+      aux = motion::countDiff(c, hallZero);
       if (cfg[K_REST] >= 0) goFlap(cfg[K_REST]);
     } else if (settleKind == S_MOVE) {
-      int32_t err = c - target;
+      int32_t err = motion::countDiff(c, target);
       lastErr = err;
       if (cfg[K_AUTO]) cfg[K_LEAD] = motion::learnLead(cfg[K_LEAD], err);
     }

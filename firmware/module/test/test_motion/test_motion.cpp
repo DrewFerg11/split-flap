@@ -90,11 +90,25 @@ static void test_flap_target_extremes() {
   // cpr 1 and far from home: used to loop once per count; now closed form
   TEST_ASSERT_EQUAL(2000000001, flapTarget(0, 0, 1, 1, 0, 0, 2000000000));
   TEST_ASSERT_EQUAL(-1999999999, flapTarget(0, 0, 1, 1, 0, 0, -2000000000));
-  // hall zero far behind the count (long run since homing): still the next flap forward
-  int32_t now = 2000000000, tgt = flapTarget(-100000000, 0, CPR, FLAPS, 8, 10, now);
+  // hall zero far behind the count (long run since homing, still < 2^31 counts apart): next flap forward
+  int32_t now = 1900000000, tgt = flapTarget(-100000000, 0, CPR, FLAPS, 8, 10, now);
   TEST_ASSERT_TRUE(tgt > now + 8 && tgt <= now + 8 + CPR);
   int64_t flap10 = -100000000LL + lroundf(10 * countsPerFlap(CPR, FLAPS));
   TEST_ASSERT_EQUAL(0, (int32_t)(((int64_t)tgt - flap10) % CPR));   // flap 10's position, whole revs on
+}
+
+static void test_across_counter_wrap() {
+  // TIM2 wraps: positions just below INT32_MAX and just past it (negative) are a few counts apart.
+  const int32_t MAX = 2147483647;
+  TEST_ASSERT_EQUAL(10, countDiff(-2147483644, MAX - 5));    // 5 counts up to MAX, 5 more past the wrap
+  TEST_ASSERT_EQUAL(-2147483644, countAdd(MAX - 5, 10));
+  int32_t hz = MAX - 3000, now = MAX - 100;
+  for (int flap = 0; flap < FLAPS; flap++) {
+    int32_t tgt = flapTarget(hz, 37, CPR, FLAPS, 8, flap, now);
+    int32_t ahead = countDiff(tgt, now);
+    TEST_ASSERT_TRUE(ahead > 8 && ahead <= 8 + CPR);           // still the next one forward
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, (float)flap, currentFlap(tgt, hz, 37, CPR, FLAPS));
+  }
 }
 
 static void test_current_flap() {
@@ -192,6 +206,7 @@ int main() {
   RUN_TEST(test_flap_target_lands_on_flap);
   RUN_TEST(test_flap_target_never_goes_backwards);
   RUN_TEST(test_flap_target_extremes);
+  RUN_TEST(test_across_counter_wrap);
   RUN_TEST(test_current_flap);
   RUN_TEST(test_ramp_up);
   RUN_TEST(test_move_duty);
