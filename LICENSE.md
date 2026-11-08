@@ -66,8 +66,24 @@ displays, ask first by opening an issue at
 
 ## Acknowledgements
 
-This is an original design. It was informed by ideas from other
-split-flap projects, including [Adam G Makes](https://github.com/adamgmakes/SplitFlapDisplay),
-[Morgan Manly](https://github.com/ManlyMorgan/Split-Flap-Display), and dowjames'
-SplitFlap PCB v5.1 (board chaining and enclosure mounting). No files from those
-projects are included.
+**This is original work.** Split-flap displays share a mechanism that's decades old: flaps
+hinged on a rotating drum, a motor to turn it, and a sensor to find home. Within that common
+ground, everything in this repository (the module mechanics, circuit boards, firmware, bus
+protocol, applications, flap sets and documentation) was designed and written for this project
+by Drew Ferguson and its contributors. No files from other projects are included; third-party
+material with its own license is listed in
+[THIRD-PARTY-NOTICES.md](LICENSES/THIRD-PARTY-NOTICES.md).
+
+**Thanks** to the open split-flap community, whose published work and generous discussion made
+a project like this approachable:
+
+- **Morgan Manly's [Split-Flap Display](https://github.com/ManlyMorgan/Split-Flap-Display)**,
+  the open design behind Drew's first split-flap build
+  ([DrewFerg11/Split-Flap-Display](https://github.com/DrewFerg11/Split-Flap-Display)), which is
+  where this project's ambitions started.
+- **[Adam G Makes](https://github.com/adamgmakes/SplitFlapDisplay)** and his community, for
+  sharing their build and their experience so openly.
+- **dowjames' SplitFlap PCB v5.1.** The module board here uses the same hall-sensor connector and
+  pinout, so existing sensor leads plug straight in.
+- **[Scott Bezek's splitflap](https://github.com/scottbez1/splitflap)**, the long-running open
+  reference that much of the hobby has learned from.
