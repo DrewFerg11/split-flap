@@ -21,10 +21,12 @@ on:
       - 'feature/**'
     paths:
       - docs/**
+      - pcb/module-board/fab/images/league-table-module-v0.1-3d.png
       - .github/workflows/docs-deploy.yml
   pull_request:
     paths:
       - docs/**
+      - pcb/module-board/fab/images/league-table-module-v0.1-3d.png
       - .github/workflows/docs-deploy.yml
   workflow_dispatch:
 

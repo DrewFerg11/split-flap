@@ -1,21 +1,21 @@
 :root {
   --sl-font: 'Archivo', system-ui, sans-serif;
   --sl-font-mono: 'IBM Plex Mono', monospace;
-  --sl-color-accent-low: #302719;
-  --sl-color-accent: #dea84b;
-  --sl-color-accent-high: #f5d49c;
-  --sl-color-bg: #15191a;
-  --sl-color-bg-nav: #15191a;
-  --sl-color-bg-sidebar: #15191a;
+  --sl-color-accent-low: #192d59;
+  --sl-color-accent: #739dff;
+  --sl-color-accent-high: #bdcfff;
+  --sl-color-bg: #121b2b;
+  --sl-color-bg-nav: #121b2b;
+  --sl-color-bg-sidebar: #121b2b;
 }
 
 :root[data-theme='light'] {
-  --sl-color-accent-low: #f6e8d2;
-  --sl-color-accent: #85520d;
-  --sl-color-accent-high: #563608;
-  --sl-color-bg: #f8f6f0;
-  --sl-color-bg-nav: #f8f6f0;
-  --sl-color-bg-sidebar: #f8f6f0;
+  --sl-color-accent-low: #e4ecff;
+  --sl-color-accent: #2756cf;
+  --sl-color-accent-high: #15347f;
+  --sl-color-bg: #f7f9fc;
+  --sl-color-bg-nav: #f7f9fc;
+  --sl-color-bg-sidebar: #f7f9fc;
 }
 
 .site-title {
@@ -25,7 +25,7 @@
 }
 
 .hero h1 {
-  max-width: 11ch;
+  max-width: 13ch;
   font-size: clamp(2.7rem, 5vw, 4.5rem);
   line-height: 1.05;
   letter-spacing: -0.055em;
@@ -38,8 +38,10 @@
 
 .hero > img {
   width: min(100%, 26rem);
-  height: auto;
-  filter: drop-shadow(0 1.5rem 1.5rem #0002);
+  height: 27rem;
+  object-fit: cover;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.25rem;
 }
 
 .eyebrow {
@@ -52,5 +54,11 @@
 
 .card,
 .sl-link-card {
-  border-radius: 0.65rem;
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 49.99rem) {
+  .hero > img {
+    height: 19rem;
+  }
 }
