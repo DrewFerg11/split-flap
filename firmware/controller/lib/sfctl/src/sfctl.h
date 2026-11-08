@@ -49,7 +49,7 @@ bool setKey(uint8_t addr, uint8_t key, int32_t value);
 
 // ---- settings kept on the ESP32 (flash), one set per address
 bool hasSaved(uint8_t addr);
-void storeSettings(uint8_t addr, const int32_t *v);
+bool storeSettings(uint8_t addr, const int32_t *v);   // false if the flash write failed
 bool autoSave(uint8_t addr);      // read the module's settings and store them
 void forget(uint8_t addr);
 void restoreIfReset(uint8_t addr);   // addr = broadcast: every known module
@@ -57,7 +57,7 @@ void restoreIfReset(uint8_t addr);   // addr = broadcast: every known module
 // ---- procedures
 // Polls until the module is idle. The abort hook stops every module and returns false.
 bool waitIdle(uint8_t addr, sfbus::Status &s, uint32_t maxMs);
-// Homes revs + 1 times; each hall-to-hall rev measures counts/rev. Sets cpr and rescales the
+// Homes revs + 1 times (revs 1..32); each hall-to-hall rev measures counts/rev. Sets cpr and rescales the
 // settings kept in counts, then stores them.
 void calibrate(uint8_t addr, int revs);
 // "The drum shows flap n now": shifts foff so this position is flap n, then stores the settings.

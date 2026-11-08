@@ -191,19 +191,22 @@ int scan(int maxAddr, void (*found)(uint8_t addr, const Ping &p)) {
 
 // ------------------------------------------------------------ settings ---
 
-void storeSettings(uint8_t addr, const int32_t *v) {
-  if (!inRange(addr)) return;
+// Only a write that reached flash counts: the RAM copy (what gets pushed after a reset) changes with it.
+bool storeSettings(uint8_t addr, const int32_t *v) {
+  if (!inRange(addr)) return false;
   char k[8]; key(k, sizeof k, addr);
-  prefs.begin(NVS_NS, false); prefs.putBytes(k, v, sizeof(int32_t) * K_COUNT); prefs.end();
-  memcpy(saved[addr], v, sizeof(int32_t) * K_COUNT); savedValid[addr] = true;
+  const size_t len = sizeof(int32_t) * K_COUNT;
+  bool ok = prefs.begin(NVS_NS, false) && prefs.putBytes(k, v, len) == len;
+  prefs.end();
+  if (!ok) { say("[%u] writing settings to flash failed\n", addr); return false; }
+  memcpy(saved[addr], v, len); savedValid[addr] = true;
+  return true;
 }
 
 // Every setting change is kept on the ESP32 straight away, so there is no separate 'save' to forget.
 bool autoSave(uint8_t addr) {
   int32_t v[K_COUNT];
-  if (!getCfg(addr, v)) return false;
-  storeSettings(addr, v);
-  return true;
+  return getCfg(addr, v) && storeSettings(addr, v);
 }
 
 void forget(uint8_t addr) {
@@ -238,6 +241,7 @@ bool waitIdle(uint8_t addr, Status &s, uint32_t maxMs) {
 // Home, then home 'revs' more times; each home is exactly one drum rev between hall edges.
 // The hall edge count is the stop count minus how far it ran past the edge (Status.aux).
 void calibrate(uint8_t addr, int revs) {
+  if (revs < 1 || revs > 32) { say("[%u] cal needs 1..32 revs\n", addr); return; }   // edges[] holds revs + 1
   int32_t v[K_COUNT];
   if (!getCfg(addr, v)) { say("[%u] no reply\n", addr); return; }
   int32_t oldCpr = v[K_CPR];

@@ -181,8 +181,7 @@ static void handle(const std::string &raw) {
     int32_t v[K_COUNT];
     if (!sfctl::getCfg(addr, v)) { Serial.printf("[%u] no reply\n", addr); return; }
     if (cmd == "save") {
-      sfctl::storeSettings(addr, v);
-      Serial.printf("[%u] settings saved on the ESP32\n", addr);
+      if (sfctl::storeSettings(addr, v)) Serial.printf("[%u] settings saved on the ESP32\n", addr);
     }
     for (int i = 0; i < K_COUNT; i++)
       Serial.printf("  %-6s %7ld   %s%s\n", KEY_NAMES[i], (long)v[i], KEY_HELP[i], v[i] != KEY_DEFAULTS[i] ? "  *" : "");
