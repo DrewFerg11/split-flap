@@ -1,44 +1,16 @@
 import { CLUBS } from './data.js';
 import { createViews } from './views.js';
 import { icons } from './icons.js';
+import flapSets from './flap-sets.generated.js';
+import { loadDrums } from './flaps.js';
 
 const colours = { yellow: '#f2c230', blue: '#1f5fbf', orange: '#ee7a1f', green: '#23a05a', red: '#c8231f', white: '#eeeeea' };
-const colourFlaps = Object.keys(colours).map((colour) => 'c:' + colour);
-const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-const minus = '−';
-const stages = ['MATCHDAY', 'PLAY-OFF', 'LAST 16', 'QF', 'SF', 'FINAL'];
-const headerNumbers = ['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'R', 'L'];
 export const bodyRows = CLUBS.length;
 
-// TODO: consume application-owned flap data after applications/premier-league is migrated.
-// Snapshot: flap-sets.md, 2026-11-05. Slot 46 is the divider on the three drums that carry it.
-export const drums = {
-  name: {
-    label: 'Main name',
-    flaps: ['', ...CLUBS, 'OPPONENT', 'KICK OFF', '1ST HALF', 'HALF TIME', '2ND HALF',
-      'EXTRA TIME', 'PENALTIES', 'FULL TIME', 'AGGREGATE', 'POSTPONED', 'GOAL!', 'VAR CHECK',
-      'NO GOAL', 'RED CARD', ...days, 'EUROPA LEAGUE', 'CONFERENCE LEAGUE', '@open', '|divider', ...colourFlaps],
-  },
-  digit: {
-    label: 'Main digit',
-    flaps: ['', ...[5, 4, 3, 2, 1].map((n) => minus + n), minus,
-      ...Array.from({ length: 24 }, (_, n) => String(n)), ':00', ':15', ':30', ':45',
-      '↑', '↓', '=', '?', '#ball', '#lion', '#trophy', '#liver', '#jersey', '#boot', '|divider', ...colourFlaps],
-  },
-  hname: {
-    label: 'Header name',
-    flaps: ['', 'PREMIER LEAGUE', 'MATCHWEEK', 'LIVE', 'RESULTS', 'FIXTURES', 'POINTS',
-      'GOAL DIFFERENCE', 'GOALS FOR', 'GOALS AGAINST', 'PLAYED', 'POSITION',
-      'FA CUP', 'FA CUP QF', 'FA CUP SF', 'FA CUP FINAL', 'LEAGUE CUP', 'LEAGUE CUP QF',
-      'LEAGUE CUP SF', 'LEAGUE CUP FINAL', ...['UCL', 'UEL', 'UECL'].flatMap((cup) => stages.map((stage) => cup + ' ' + stage)),
-      'COMMUNITY SHIELD', 'SUPER CUP', 'CLUB WORLD CUP', 'FRIENDLY', 'INTERNATIONAL BREAK',
-      'SEASON STARTS IN', '@open', '|divider', ...colourFlaps],
-  },
-  hdigit: {
-    label: 'Header digit',
-    flaps: [...headerNumbers, ...headerNumbers, ...headerNumbers, ...Array(7).fill('@open'), ...colourFlaps],
-  },
-};
+// Illustrative artwork for the three undecided main-digit wildcard flaps.
+// This does not change the application JSON or define what will be printed.
+export const wildcards = { digit: ['liver', 'jersey', 'boot'] };
+export const drums = loadDrums(flapSets, { colours, icons, wildcards });
 const modules = (header = false) => [
   { type: 'name', drum: header ? 'hname' : 'name' },
   { type: 'digit', drum: header ? 'hdigit' : 'digit' },
@@ -86,7 +58,7 @@ export const app = {
     },
     {
       title: 'Planned flap sets',
-      text: 'The November 5 plan puts the main-name, main-digit, and header-name divider at slot 46, before the six colours. Header digits have three repeated number blocks and seven spare slots. Symbols labelled LION and LIVER are text placeholders. Motion is illustrative, not a calibrated motor-speed simulation.',
+      text: 'The shared application flap sets put the main-name, main-digit, and header-name divider at flap 45 (table slot 46), before the six colours. Header digits have three repeated number blocks and seven spare slots. LION is a text placeholder. LIVER, jersey, and boot illustrate the three undecided digit wildcards; they are not finalized printed artwork. Motion is illustrative, not a calibrated motor-speed simulation.',
     },
   ],
 };
