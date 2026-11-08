@@ -431,7 +431,7 @@ Firmware lesson 3: `HardwareTimer::resume()` with no bound pin leaves TIM3 stopp
 
 Board #1 works end to end on the bench. Picture aids in `images/`: `bringup-meter-points.png` (probe points J1/J6/J3), `bringup-led-d2.png`, `bringup-current-measure.png`. Bench: ST-Link V2 clone (needs the Zadig WinUSB driver), 12 V bench supply, Crenova MS8233D meter (mA jack is the right-hand one, red lead back to VOhm after).
 Next, in order:
-1. Re-flash board #1 with `pio run -e ltm -t upload` (the `autotest` build is on it and spins the motor 10 s after every reset).
+1. Re-flash board #1 with `pio run -e bringup -t upload` (in `firmware/bringup`) (the `autotest` build is on it and spins the motor 10 s after every reset).
 2. Repeat the unpowered shorts check (J1 pin 1 to 2, J6 pad 1 to 5), power-up and flash on boards #2-#10. Look at D2 and the hall/J3 connectors too.
 3. Move the motor from the J4 pads to J3 with a ZH cable once one is available (J3 untested with a motor).
 4. Read ISEN (PA4, 0.33 ohm sense) under a held motor and set the jam threshold; fix the 25 % startup.
