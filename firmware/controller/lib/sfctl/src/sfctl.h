@@ -38,7 +38,7 @@ void clearTimeouts();
 bool known(uint8_t addr);         // answered since the last scan
 void setKnown(uint8_t addr, bool k);
 bool ping(uint8_t addr, sfbus::Ping &p, int tries = 2);
-// Pings 1..maxAddr; calls found() for each module that answers, then re-sends its saved settings if it
+// Pings 1..maxAddr (at most MAX_ADDR); calls found() for each module that answers, then re-sends its saved settings if it
 // has reset. Returns how many answered.
 int scan(int maxAddr, void (*found)(uint8_t addr, const sfbus::Ping &p) = nullptr);
 // Status (or any command answered by a Status). A module reporting F_FRESH has reset to its compiled

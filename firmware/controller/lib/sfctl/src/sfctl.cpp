@@ -176,7 +176,7 @@ bool ping(uint8_t addr, Ping &p, int tries) {
 
 int scan(int maxAddr, void (*found)(uint8_t addr, const Ping &p)) {
   int count = 0;
-  for (int a = 1; a <= maxAddr; a++) {
+  for (int a = 1; a <= maxAddr && a <= MAX_ADDR; a++) {
     knownAddr[a] = false;
     Ping p;
     if (ping(a, p, 1)) {
