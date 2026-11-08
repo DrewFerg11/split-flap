@@ -13,4 +13,10 @@ hardware/<part>/
 **Releases:** tagged `hw/<part>/vX.Y`, built locally, files committed. Print files may also be
 published on MakerWorld and linked from the release.
 
-Nothing migrated or released yet.
+| Path | What |
+|---|---|
+| [`rail/`](rail/) | the trunk up the side of the board: 12 V + bus to every row (research, leaning to idea A) |
+| [`design-ownership.md`](design-ownership.md) | the from-scratch rules for the module design (what may and may not be reused) |
+| [`parts-shortlist.md`](parts-shortlist.md) | module parts: the N20 encoder motor and its sources |
+
+The digit and name modules (CAD, scripts, print files) aren't migrated yet. Nothing released yet.

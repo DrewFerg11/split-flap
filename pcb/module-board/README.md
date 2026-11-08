@@ -9,8 +9,7 @@
 ![top](fab/images/league-table-module-v0.1-top.png)
 Start with [`design/DESIGN-1.md`](design/DESIGN-1.md).
 
-One small board per split-flap module (digit and name) of the league-table display
-([`builds/league-table`](../../builds/league-table/README.md)): STM32G031 + DRV8870 driving one 12 V
+One small board per split-flap module (digit and name) of the [Premier League display](../../applications/premier-league/README.md): STM32G031 + DRV8870 driving one 12 V
 N20 encoder motor, A3144 homing, RS-485 to a single ESP32 host, chained module-to-module through
 right-angle headers on the board edges.
 

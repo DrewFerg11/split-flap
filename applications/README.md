@@ -7,7 +7,7 @@ rather than copying them.
 
 | Folder | What |
 |---|---|
-| [`premier-league/`](premier-league/) | Premier League (EPL): table and live scores. Not migrated yet |
+| [`premier-league/`](premier-league/) | Premier League (EPL): table and live scores. Concept, plan, flap sets; firmware planned (#15) |
 
 ## Naming
 

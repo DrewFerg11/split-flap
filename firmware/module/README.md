@@ -3,7 +3,7 @@
 Firmware for the [module board](../../pcb/module-board/) (STM32G031): an RS-485 slave that homes on the hall
 sensor and goes to flaps (motion logic from the earlier N20 bench sketch). The same project also builds the
 **bridge** (a spare board used as the ESP32's RS-485 adapter). Host side: the [controller](../controller/).
-Wiring pages: not migrated yet (Premier League application).
+Wiring pages: [`controller/wiring`](../controller/wiring/).
 
 ## Flash (ST-Link on J6 pads 2-5, board on 12 V)
 
