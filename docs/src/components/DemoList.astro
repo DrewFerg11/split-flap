@@ -1,0 +1,9 @@
+---
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { getDemos } from '../lib/demos';
+---
+
+<CardGrid>
+  {getDemos().map((demo) => <LinkCard title={demo.title} description={demo.description}
+    href={import.meta.env.BASE_URL + 'demo/' + demo.slug + '/'} />)}
+</CardGrid>

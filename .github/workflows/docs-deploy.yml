@@ -102,6 +102,7 @@ jobs:
         working-directory: docs
         run: |
           npm run test:previews
+          npm run test:demo
           npm run check
 
       - name: Build site

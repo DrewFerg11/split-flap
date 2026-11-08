@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "check": "astro check",
     "test:previews": "node scripts/check-preview-paths.mjs",
+    "test:demo": "node --test tests/demo.test.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "verify": "node scripts/verify-site.mjs"
