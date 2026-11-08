@@ -4,6 +4,28 @@ Material in this repository that isn't covered by the project's CC BY-NC-SA 4.0 
 is listed here with its own license. Each entry is added together with the material it
 covers.
 
+## Site fonts
+
+The WOFF2 files in `docs/public/assets/fonts/` are distributed under the
+SIL Open Font License 1.1, independently of the project's license.
+Full copyright notices and license texts accompany the files:
+
+- **League Gothic**, regular 400, Latin subset (Google Fonts v13):
+  [license](../docs/public/assets/fonts/league-gothic-OFL.txt),
+  [upstream](https://github.com/google/fonts/tree/main/ofl/leaguegothic).
+- **Archivo**, variable weight 100–900, normal width, Latin subset
+  (Google Fonts v25):
+  [license](../docs/public/assets/fonts/archivo-OFL.txt),
+  [upstream](https://github.com/google/fonts/tree/main/ofl/archivo).
+- **IBM Plex Mono**, regular 400 and medium 500, Latin subsets
+  (Google Fonts v20):
+  [license](../docs/public/assets/fonts/ibm-plex-mono-OFL.txt),
+  [upstream](https://github.com/google/fonts/tree/main/ofl/ibmplexmono).
+
+The files are hosted locally; page views do not contact Google Fonts.
+Download sources and update notes are recorded in
+[`docs/public/assets/fonts/README.md`](../docs/public/assets/fonts/README.md).
+
 ## Not included
 
 - **League and club names, logos, and crests** belong to their owners. None are

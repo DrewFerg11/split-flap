@@ -1,0 +1,64 @@
+:root {
+  --sl-font: 'Archivo', system-ui, sans-serif;
+  --sl-font-mono: 'IBM Plex Mono', monospace;
+  --sl-color-accent-low: #192d59;
+  --sl-color-accent: #739dff;
+  --sl-color-accent-high: #bdcfff;
+  --sl-color-bg: #121b2b;
+  --sl-color-bg-nav: #121b2b;
+  --sl-color-bg-sidebar: #121b2b;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e4ecff;
+  --sl-color-accent: #2756cf;
+  --sl-color-accent-high: #15347f;
+  --sl-color-bg: #f7f9fc;
+  --sl-color-bg-nav: #f7f9fc;
+  --sl-color-bg-sidebar: #f7f9fc;
+}
+
+.site-title {
+  color: var(--sl-color-white);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.hero h1 {
+  max-width: 13ch;
+  font-size: clamp(2.7rem, 5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.hero .tagline {
+  max-width: 37rem;
+  font-size: 1.1rem;
+}
+
+.hero > img {
+  width: min(100%, 26rem);
+  height: 27rem;
+  object-fit: cover;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.25rem;
+}
+
+.eyebrow {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--sl-color-text-accent);
+}
+
+.card,
+.sl-link-card {
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 49.99rem) {
+  .hero > img {
+    height: 19rem;
+  }
+}
