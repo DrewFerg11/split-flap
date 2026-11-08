@@ -19,3 +19,6 @@ Free to build, modify, and share for noncommercial use under
 build, selling a used personal build, platform rewards on remixes). Commercial use needs
 permission. See [LICENSE.md](LICENSE.md), [THIRD-PARTY-NOTICES.md](LICENSES/THIRD-PARTY-NOTICES.md),
 and [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+This is original work; see the [Acknowledgements](LICENSE.md#acknowledgements) for the projects
+we're grateful to.
