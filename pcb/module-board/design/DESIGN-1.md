@@ -396,7 +396,7 @@ renders and review images in `images/`, ERC/DRC reports, `netlist.txt`.
 | 3 | N20 running current on the real drum (bench) | power numbers only |
 | 4 | Stock / second source for the 5-pin right-angle female socket | BOM |
 | 5 | ~~THT connectors~~ **decided 2026-10-15 (first JLC upload):** Drew hand-solders **C1** only (SMD electrolytic is Standard-PCBA-only at JLC: +$25 and a forced 70 × 70 mm panel); it's left out of the JLC BOM/CPL and listed in `fab/*-hand-solder.csv`. JLC places every connector; J1, J2, J5 landed rotated 90° in the first preview and are fixed by hand in the preview | — |
-| 6 | Trunk design (loom / PCB rail / bus bars), row plug, termination location | separate design: [`builds/league-table/rail.md`](../../../builds/league-table/rail.md) |
+| 6 | Trunk design (loom / PCB rail / bus bars), row plug, termination location | separate design: [`hardware/rail`](../../../hardware/rail/) |
 | 7 | **JLC rotations**: U1/U2/U3/U4/Q1 carry 7SEG's preview corrections (`scripts/jlc_cpl.py`); every other part, and the THT connectors, are unverified. Check pin 1 / polarity of every part in JLC's placement preview | order |
 | 8 | Chain connectors overhang the board edges (J2's socket body ~8.4 mm, held only by its pins). Fine on the bench; the enclosure window should support it | enclosure |
 | 9 | B.Cu ground plane is broken into a few islands by bottom-side signal hops (all stitched to the main plane; DRC clean). Acceptable for these slow signals; a v0.2 could keep B.Cu solid | v0.2 |
@@ -441,7 +441,8 @@ Open hardware items still open: 3, 4, 7 (JLC rotations: D2 turned out fine), 8.
 **2026-10-28: bus firmware written, builds, not yet flashed.** `firmware/ltm-node` (envs `node1..3` = fixed
 bus address, `bridge` = spare board as the ESP32's RS-485 adapter via J6 pads 5-7) and `firmware/ltm-host`
 (ESP32 on COM4, text commands as in n20-bench). Wiring pages: `builds/league-table/ltm-3-module-wiring-bridge.html`
-(no adapter) and `ltm-3-module-wiring.html` (MAX3485 module, ordered option). Plan: bridge + one module first, then 3.
+(no adapter) and `ltm-3-module-wiring.html` (MAX3485 module, ordered option); now
+[`firmware/controller/wiring/`](../../../firmware/controller/wiring/). Plan: bridge + one module first, then 3.
 Drive changed to slow decay (drive/brake PWM) to match the bench TB6612; `dir` defaults to 1 (bench) and is unverified on this board.
 
 **2026-10-28/29: RS-485 works.** Bridge + board #1 (address 1, digit, uid 00490028-…) found, homed and calibrated:

@@ -1,0 +1,425 @@
+<title>League Table Rail</title>
+<style>
+  /* Layout: one reading column of text, full-width figures that scroll sideways on phones.
+     Tokens match builds/league-table/wiring.html so the project's wiring pages read as a set. */
+  :root {
+    --ground: #F1F4F2; --surface: #FFFFFF; --surface-2: #E9EDEB;
+    --ink: #13181A; --ink-2: #555E61; --ink-3: #848E92;
+    --line: #D2D9D6; --line-strong: #B4BEBB;
+    --accent: #0E7C86; --accent-soft: rgba(14,124,134,0.10);
+    --caution: #A86A12; --caution-soft: rgba(168,106,18,0.10);
+    --w-12: #C0392E; --w-a: #2C6AB0; --w-b: #6E4CBC; --w-gnd: #262C2F; --w-en: #A86A12;
+    --board: #FBFCFB; --mod: #F3F1FA; --metal: #C9CFCD; --metal-2: #8E9794; --wood: #EFE7DA;
+    --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: "Cascadia Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+      --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+      --line: #293135; --line-strong: #3A4449;
+      --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+      --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+      --w-12: #FF7062; --w-a: #6BA6E8; --w-b: #A98BF0; --w-gnd: #AFB9BB; --w-en: #E5A93F;
+      --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #8A9491; --wood: #241F18;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0E1214; --surface: #161B1E; --surface-2: #1E2529;
+    --ink: #E4EAE8; --ink-2: #99A4A6; --ink-3: #6F797C;
+    --line: #293135; --line-strong: #3A4449;
+    --accent: #4CCBD6; --accent-soft: rgba(76,203,214,0.12);
+    --caution: #E5A93F; --caution-soft: rgba(229,169,63,0.12);
+    --w-12: #FF7062; --w-a: #6BA6E8; --w-b: #A98BF0; --w-gnd: #AFB9BB; --w-en: #E5A93F;
+    --board: #1C2327; --mod: #221F2E; --metal: #59625F; --metal-2: #8A9491; --wood: #241F18;
+    color-scheme: dark;
+  }
+
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 30px; }
+  .col { max-width: 760px; min-width: 0; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 4px 0 8px; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: 19px; margin: 0 0 8px; text-wrap: balance; }
+  p { margin: 0 0 10px; }
+  .eyebrow { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .lede { color: var(--ink-2); }
+  code { font-family: var(--mono); font-size: 0.9em; }
+  ul { margin: 0; padding-left: 20px; } li { margin: 0 0 6px; }
+
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; height: auto; }
+  .f1 svg { min-width: 860px; } .f2 svg { min-width: 600px; } .f3 svg { min-width: 860px; }
+  .f2 .scroll { max-width: 760px; }
+  figcaption { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--ink-2); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 22px; height: 0; border-top: 3px solid; display: inline-block; }
+  .sw.w12 { border-color: var(--w-12); border-top-width: 5px; } .sw.wg { border-color: var(--w-gnd); border-top-width: 5px; }
+  .sw.wa { border-color: var(--w-a); } .sw.wb { border-color: var(--w-b); } .sw.we { border-color: var(--w-en); border-top-style: dashed; }
+  .sw.fuse { width: 18px; height: 9px; border: 1.5px solid var(--ink-2); border-radius: 2px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 11px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tablebox { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .note { border-left: 3px solid var(--caution); background: var(--caution-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; }
+  .note h3 { font-size: 14px; margin: 0 0 4px; }
+  .notes { display: grid; gap: 12px; }
+
+  /* SVG */
+  svg text { fill: var(--ink); font-family: var(--sans); }
+  .t-sm { font-size: 13px; } .t-xs { font-size: 11.5px; } .t-xxs { font-size: 9.5px; font-family: var(--mono); }
+  .ink2 { fill: var(--ink-2); } .ink3 { fill: var(--ink-3); } .b { font-weight: 600; }
+  .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  .backboard { fill: var(--wood); stroke: var(--line-strong); }
+  .mod { fill: var(--mod); stroke: var(--line-strong); }
+  .hdr { fill: var(--ink-3); }
+  .housing { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.3; }
+  .slot { fill: var(--surface-2); stroke: var(--ink-3); }
+  .box { fill: var(--surface); stroke: var(--ink-2); }
+  .bay { fill: none; stroke: var(--ink-3); stroke-dasharray: 5 4; }
+  .band { fill: var(--wood); opacity: 0.9; }
+  .bus { stroke-width: 6; stroke-linecap: round; fill: none; }
+  .data { stroke-width: 2; fill: none; }
+  .drop { stroke-width: 3; fill: none; }
+  .thin { stroke-width: 2; fill: none; }
+  .gap { stroke-dasharray: 2 5; stroke-width: 2; }
+  .w12 { stroke: var(--w-12); } .wg { stroke: var(--w-gnd); } .wa { stroke: var(--w-a); } .wb { stroke: var(--w-b); }
+  .we { stroke: var(--w-en); stroke-dasharray: 5 3; }
+  .f12 { fill: var(--w-12); } .fg { fill: var(--w-gnd); } .fb { fill: var(--w-b); }
+  .dot-a { fill: var(--w-a); } .dot-b { fill: var(--w-b); } .dot-e { fill: var(--w-en); }
+  .fuse { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.3; }
+  .fuseline { stroke: var(--ink-2); stroke-width: 1.2; }
+  .res { fill: var(--surface); stroke: var(--ink-2); }
+  .ink-line { stroke: var(--ink-3); }
+  .arrow { stroke: var(--ink-2); stroke-width: 1.5; fill: none; } .arrowhead { fill: var(--ink-2); }
+  .dim { stroke: var(--ink-3); fill: none; }
+  .guide { fill: var(--accent-soft); stroke: var(--accent); }
+  .drum { fill: none; stroke: var(--line-strong); stroke-dasharray: 4 4; }
+  .pcb { fill: var(--board); stroke: var(--ink-2); }
+  .pin { stroke: var(--metal-2); stroke-width: 3; }
+  .standoff { fill: var(--surface-2); stroke: var(--ink-3); }
+  .holder { fill: var(--surface-2); stroke: var(--ink-2); stroke-width: 1.3; }
+  .pocket { fill: none; stroke: var(--ink-3); stroke-dasharray: 3 3; }
+</style>
+
+<div class="wrap">
+  <header class="col">
+    <div class="eyebrow">League table · main rail · option A</div>
+    <h1>The rail on the right of the rows</h1>
+    <p class="lede">Bus wires up the side for power, one data cable, and one press-on socket per row that the
+      row's existing header slides into. Not to scale. Drawn from <code>rail.md</code> (2026-10-31); nothing here is decided yet.</p>
+  </header>
+
+  <section>
+    <div class="col"><h2>1 · The whole rail</h2>
+      <p>Two thick wires carry 12 V and GND up the right side from the PSU. Each row taps them with two short
+        wires, the 12 V one through its own fuse. The data cable (A, B and a spare for ENUM) runs up past
+        every row and passes through each row's socket.</p></div>
+    <figure class="f1">
+      <div class="scroll"><svg viewBox="0 0 1000 700" role="img" aria-label="Rail overview: rows on the left, socket per row, buses and data cable on the right, PSU and ESP32 at the bottom">
+<rect x="20" y="20" width="960" height="660" rx="6" class="backboard"/>
+<text x="34" y="672" class="t-xs ink3">wooden back board (wall behind)</text>
+<text x="60" y="58" class="t-sm ink2">rows slide in from the left</text>
+<path d="M232,54 H300" class="arrow"/><path d="M300,54 l-7,-4 v8 z" class="arrowhead"/>
+<path d="M40,70 V132 M34,70 H46 M34,132 H46" class="dim"/>
+<text x="0" y="0" class="t-xs ink3" text-anchor="middle" transform="translate(32,101) rotate(-90)">~75 mm</text>
+<line x1="790" y1="58" x2="790" y2="520" class="w12 bus"/>
+<line x1="790" y1="548" x2="790" y2="580" class="w12 bus"/>
+<line x1="830" y1="58" x2="830" y2="580" class="wg bus"/>
+<text x="790" y="50" class="t-xs" text-anchor="middle">+12 V</text>
+<text x="830" y="50" class="t-xs" text-anchor="middle">GND</text>
+<rect x="60" y="70" width="330" height="50" rx="4" class="mod"/>
+<text x="74" y="100" class="t-sm ink2">Row 1</text>
+<text x="225" y="100" class="t-sm" text-anchor="middle">name module</text>
+<rect x="400" y="70" width="110" height="50" rx="4" class="mod"/>
+<text x="455" y="100" class="t-sm" text-anchor="middle">digit</text>
+<rect x="520" y="70" width="110" height="50" rx="4" class="mod"/>
+<text x="575" y="100" class="t-sm" text-anchor="middle">digit</text>
+<rect x="630" y="89" width="16" height="12" class="hdr"/>
+<rect x="646" y="76" width="94" height="38" rx="3" class="housing"/>
+<text x="672" y="99" class="t-xs ink3" text-anchor="middle">MTA</text>
+<path d="M790,86 H778 M752,86 H740" class="w12 thin"/>
+<rect x="752" y="81" width="26" height="10" rx="2" class="fuse"/>
+<line x1="754" y1="86" x2="776" y2="86" class="fuseline"/>
+<path d="M830,106 H797 A7,7 0 0 0 783,106 H740" class="wg thin"/>
+<circle cx="790" cy="86" r="3.5" class="f12"/>
+<circle cx="830" cy="106" r="3.5" class="fg"/>
+<circle cx="704" cy="95" r="2.6" class="dot-a"/>
+<circle cx="716" cy="95" r="2.6" class="dot-b"/>
+<circle cx="728" cy="95" r="2.6" class="dot-e"/>
+<rect x="60" y="132" width="330" height="50" rx="4" class="mod"/>
+<text x="74" y="162" class="t-sm ink2">Row 2</text>
+<text x="225" y="162" class="t-sm" text-anchor="middle">name module</text>
+<rect x="400" y="132" width="110" height="50" rx="4" class="mod"/>
+<text x="455" y="162" class="t-sm" text-anchor="middle">digit</text>
+<rect x="520" y="132" width="110" height="50" rx="4" class="mod"/>
+<text x="575" y="162" class="t-sm" text-anchor="middle">digit</text>
+<rect x="630" y="151" width="16" height="12" class="hdr"/>
+<rect x="646" y="138" width="94" height="38" rx="3" class="housing"/>
+<path d="M790,148 H778 M752,148 H740" class="w12 thin"/>
+<rect x="752" y="143" width="26" height="10" rx="2" class="fuse"/>
+<line x1="754" y1="148" x2="776" y2="148" class="fuseline"/>
+<path d="M830,168 H797 A7,7 0 0 0 783,168 H740" class="wg thin"/>
+<circle cx="790" cy="148" r="3.5" class="f12"/>
+<circle cx="830" cy="168" r="3.5" class="fg"/>
+<circle cx="704" cy="157" r="2.6" class="dot-a"/>
+<circle cx="716" cy="157" r="2.6" class="dot-b"/>
+<circle cx="728" cy="157" r="2.6" class="dot-e"/>
+<rect x="60" y="194" width="330" height="50" rx="4" class="mod"/>
+<text x="74" y="224" class="t-sm ink2">Row 3</text>
+<text x="225" y="224" class="t-sm" text-anchor="middle">name module</text>
+<rect x="400" y="194" width="110" height="50" rx="4" class="mod"/>
+<text x="455" y="224" class="t-sm" text-anchor="middle">digit</text>
+<rect x="520" y="194" width="110" height="50" rx="4" class="mod"/>
+<text x="575" y="224" class="t-sm" text-anchor="middle">digit</text>
+<rect x="630" y="213" width="16" height="12" class="hdr"/>
+<rect x="646" y="200" width="94" height="38" rx="3" class="housing"/>
+<path d="M790,210 H778 M752,210 H740" class="w12 thin"/>
+<rect x="752" y="205" width="26" height="10" rx="2" class="fuse"/>
+<line x1="754" y1="210" x2="776" y2="210" class="fuseline"/>
+<path d="M830,230 H797 A7,7 0 0 0 783,230 H740" class="wg thin"/>
+<circle cx="790" cy="210" r="3.5" class="f12"/>
+<circle cx="830" cy="230" r="3.5" class="fg"/>
+<circle cx="704" cy="219" r="2.6" class="dot-a"/>
+<circle cx="716" cy="219" r="2.6" class="dot-b"/>
+<circle cx="728" cy="219" r="2.6" class="dot-e"/>
+<rect x="60" y="324" width="330" height="50" rx="4" class="mod"/>
+<text x="74" y="354" class="t-sm ink2">Row 20</text>
+<text x="225" y="354" class="t-sm" text-anchor="middle">name module</text>
+<rect x="400" y="324" width="110" height="50" rx="4" class="mod"/>
+<text x="455" y="354" class="t-sm" text-anchor="middle">digit</text>
+<rect x="520" y="324" width="110" height="50" rx="4" class="mod"/>
+<text x="575" y="354" class="t-sm" text-anchor="middle">digit</text>
+<rect x="630" y="343" width="16" height="12" class="hdr"/>
+<rect x="646" y="330" width="94" height="38" rx="3" class="housing"/>
+<path d="M790,340 H778 M752,340 H740" class="w12 thin"/>
+<rect x="752" y="335" width="26" height="10" rx="2" class="fuse"/>
+<line x1="754" y1="340" x2="776" y2="340" class="fuseline"/>
+<path d="M830,360 H797 A7,7 0 0 0 783,360 H740" class="wg thin"/>
+<circle cx="790" cy="340" r="3.5" class="f12"/>
+<circle cx="830" cy="360" r="3.5" class="fg"/>
+<circle cx="704" cy="349" r="2.6" class="dot-a"/>
+<circle cx="716" cy="349" r="2.6" class="dot-b"/>
+<circle cx="728" cy="349" r="2.6" class="dot-e"/>
+<rect x="60" y="386" width="330" height="50" rx="4" class="mod"/>
+<text x="74" y="416" class="t-sm ink2">Row 21</text>
+<text x="225" y="416" class="t-sm" text-anchor="middle">name module</text>
+<rect x="400" y="386" width="110" height="50" rx="4" class="mod"/>
+<text x="455" y="416" class="t-sm" text-anchor="middle">digit</text>
+<rect x="520" y="386" width="110" height="50" rx="4" class="mod"/>
+<text x="575" y="416" class="t-sm" text-anchor="middle">digit</text>
+<rect x="630" y="405" width="16" height="12" class="hdr"/>
+<rect x="646" y="392" width="94" height="38" rx="3" class="housing"/>
+<path d="M790,402 H778 M752,402 H740" class="w12 thin"/>
+<rect x="752" y="397" width="26" height="10" rx="2" class="fuse"/>
+<line x1="754" y1="402" x2="776" y2="402" class="fuseline"/>
+<path d="M830,422 H797 A7,7 0 0 0 783,422 H740" class="wg thin"/>
+<circle cx="790" cy="402" r="3.5" class="f12"/>
+<circle cx="830" cy="422" r="3.5" class="fg"/>
+<circle cx="704" cy="411" r="2.6" class="dot-a"/>
+<circle cx="716" cy="411" r="2.6" class="dot-b"/>
+<circle cx="728" cy="411" r="2.6" class="dot-e"/>
+<line x1="704" y1="36" x2="704" y2="560" class="wa data"/>
+<line x1="716" y1="36" x2="716" y2="560" class="wb data"/>
+<line x1="728" y1="36" x2="728" y2="560" class="we data"/>
+<rect x="700" y="28" width="20" height="12" rx="2" class="res"/>
+<text x="694" y="38" class="t-xs halo" text-anchor="end">120 Ω at the far end</text>
+<rect x="30" y="252" width="940" height="64" class="band"/>
+<text x="225" y="289" class="t-sm ink2" text-anchor="middle">rows 4 – 19, same as above</text>
+<text x="225" y="305" class="t-xs ink3" text-anchor="middle">rail ≈ 1.6 m tall in total</text>
+<line x1="704" y1="252" x2="704" y2="316" class="wa gap"/>
+<line x1="716" y1="252" x2="716" y2="316" class="wb gap"/>
+<line x1="728" y1="252" x2="728" y2="316" class="we gap"/>
+<line x1="790" y1="252" x2="790" y2="316" class="w12 gap"/>
+<line x1="830" y1="252" x2="830" y2="316" class="wg gap"/>
+<text x="846" y="82" class="t-xs ink2">per row:</text>
+<text x="846" y="96" class="t-xs ink2">≤ 1 A running</text>
+<text x="846" y="110" class="t-xs ink2">3 A if all 3 stall</text>
+<text x="846" y="140" class="t-xs ink2">5 A fuse on each</text>
+<text x="846" y="154" class="t-xs ink2">row's 12 V drop</text>
+<rect x="480" y="470" width="480" height="190" rx="6" class="bay"/>
+<text x="494" y="490" class="t-xs ink3">bottom bay, below the last row</text>
+<text x="846" y="498" class="t-xs ink2">≈ 25 A here</text>
+<text x="846" y="512" class="t-xs ink2">with every row moving</text>
+<rect x="785" y="520" width="10" height="28" rx="2" class="fuse"/>
+<line x1="790" y1="522" x2="790" y2="546" class="fuseline"/>
+<text x="846" y="538" class="t-xs ink2">main fuse 30–40 A</text>
+<rect x="500" y="560" width="245" height="84" rx="4" class="box"/>
+<text x="514" y="582" class="t-sm b">ESP32 + RS-485 adapter</text>
+<text x="514" y="600" class="t-xs ink2">120 Ω + fail-safe bias</text>
+<text x="514" y="616" class="t-xs ink2">5 V from a small 12 V buck</text>
+<text x="514" y="632" class="t-xs ink2">(this end of the bus)</text>
+<rect x="770" y="580" width="160" height="64" rx="4" class="box"/>
+<text x="782" y="602" class="t-sm b">12 V PSU</text>
+<text x="782" y="618" class="t-xs ink2">LRS-600-12 · 50 A</text>
+<path d="M930,620 H962" class="thin ink-line"/>
+<text x="946" y="612" class="t-xs ink3" text-anchor="middle">AC</text>
+      </svg></div>
+      <div class="legend">
+        <span><i class="sw w12"></i>+12 V bus, 12 AWG</span>
+        <span><i class="sw wg"></i>GND bus, 12 AWG</span>
+        <span><i class="sw wa"></i>RS-485 A</span>
+        <span><i class="sw wb"></i>RS-485 B</span>
+        <span><i class="sw we"></i>ENUM / spare (TBD)</span>
+        <span><i class="sw fuse"></i>fuse</span>
+      </div>
+    </figure>
+  </section>
+
+  <section>
+    <div class="col"><h2>2 · One row's socket, wiring view</h2>
+      <p>The socket is a TE MTA-100 5-pin feed-through housing. Its pins line up with the 5-pin header on the
+        rightmost digit module: <code>+12V · GND · A · B · ENUM</code>. The housing is drawn face-on so all five
+        wires are visible; in the rail it stands on its end, matching the header.</p></div>
+    <figure class="f2">
+      <div class="scroll"><svg viewBox="0 0 640 430" role="img" aria-label="Socket wiring: 12 V and GND drops from the buses into pins 1 and 2, data wires passing through pins 3 to 5">
+<line x1="110" y1="20" x2="110" y2="410" class="wg bus"/>
+<line x1="160" y1="20" x2="160" y2="410" class="w12 bus"/>
+<text x="102" y="34" class="t-xs halo" text-anchor="end">GND bus</text>
+<text x="168" y="34" class="t-xs halo">+12 V bus</text>
+<text x="102" y="48" class="t-xs ink3 halo" text-anchor="end">12 AWG</text>
+<text x="168" y="48" class="t-xs ink3 halo">12 AWG</text>
+<line x1="440" y1="40" x2="440" y2="396" class="wa data"/>
+<line x1="472" y1="40" x2="472" y2="396" class="wb data"/>
+<line x1="504" y1="40" x2="504" y2="396" class="we data"/>
+<text x="472" y="30" class="t-xs ink2" text-anchor="middle">↑ on to the next row up</text>
+<text x="472" y="414" class="t-xs ink2" text-anchor="middle">↓ from the row below (and the ESP32)</text>
+<rect x="356" y="190" width="168" height="56" rx="3" class="housing"/>
+<rect x="371" y="196" width="10" height="18" rx="1" class="slot"/>
+<rect x="403" y="196" width="10" height="18" rx="1" class="slot"/>
+<rect x="435" y="196" width="10" height="18" rx="1" class="slot"/>
+<rect x="467" y="196" width="10" height="18" rx="1" class="slot"/>
+<rect x="499" y="196" width="10" height="18" rx="1" class="slot"/>
+<text x="376" y="236" class="t-xxs" text-anchor="middle">+12V</text>
+<text x="408" y="236" class="t-xxs" text-anchor="middle">GND</text>
+<text x="440" y="236" class="t-xxs" text-anchor="middle">A</text>
+<text x="472" y="236" class="t-xxs" text-anchor="middle">B</text>
+<text x="504" y="236" class="t-xxs" text-anchor="middle">EN</text>
+<text x="350" y="268" class="t-xs ink2" text-anchor="end">MTA-100 5-pin, feed-through</text>
+<circle cx="160" cy="90" r="4" class="f12"/>
+<path d="M160,90 H240 M290,90 H376 V190" class="w12 drop"/>
+<rect x="240" y="82" width="50" height="16" rx="3" class="fuse"/>
+<line x1="244" y1="90" x2="286" y2="90" class="fuseline"/>
+<text x="265" y="74" class="t-xs" text-anchor="middle">5 A blade fuse</text>
+<text x="265" y="118" class="t-xs ink3" text-anchor="middle">22 AWG drop, ~10 cm</text>
+<text x="168" y="70" class="t-xs ink3">solder tap</text>
+<circle cx="110" cy="330" r="4" class="fg"/>
+<path d="M110,330 H153 A7,7 0 0 1 167,330 H408 V246" class="wg drop"/>
+<text x="260" y="350" class="t-xs ink3" text-anchor="middle">22 AWG drop</text>
+<circle cx="440" cy="205" r="3.2" class="dot-a"/>
+<circle cx="472" cy="205" r="3.2" class="dot-b"/>
+<circle cx="504" cy="205" r="3.2" class="dot-e"/>
+<text x="530" y="120" class="t-xs ink2">feed-through:</text>
+<text x="530" y="134" class="t-xs ink2">A, B and ENUM pass</text>
+<text x="530" y="148" class="t-xs ink2">through unbroken</text>
+<text x="530" y="300" class="t-xs ink2">drops end in their</text>
+<text x="530" y="314" class="t-xs ink2">slot, trimmed flush</text>
+      </svg></div>
+      <figcaption>Each housing is made for one wire gauge and takes one wire per slot, so the 12 AWG buses can't
+        go in directly. All five wires at a row are 22 AWG.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="col"><h2>3 · How the row plugs in, seen from above</h2>
+      <p>The printed row guide does the coarse alignment. The socket sits loose in a pocket with a funnel in
+        front, so the header can steer it the last millimetre. The row stops against an end stop, not against the pins.</p></div>
+    <figure class="f3">
+      <div class="scroll"><svg viewBox="0 0 1000 440" role="img" aria-label="Top view: module with header sliding into a floating socket in a printed holder on the back board">
+<text x="40" y="40" class="t-xs ink3">front of the display (flaps)</text>
+<text x="322" y="40" class="t-sm ink2" text-anchor="end">row slides in</text>
+<path d="M330,36 H400" class="arrow"/><path d="M400,36 l-7,-4 v8 z" class="arrowhead"/>
+<rect x="20" y="380" width="960" height="40" class="backboard"/>
+<text x="30" y="405" class="t-xs ink2">back board (wall side)</text>
+<rect x="40" y="356" width="400" height="24" class="guide"/>
+<text x="190" y="372" class="t-xs" text-anchor="middle">printed row guide, on the back board</text>
+<rect x="420" y="330" width="22" height="50" class="guide"/>
+<text x="416" y="348" class="t-xs halo" text-anchor="end">end stop</text>
+<rect x="40" y="60" width="380" height="280" rx="4" class="mod"/>
+<text x="56" y="84" class="t-sm">rightmost digit module, seen from above</text>
+<circle cx="230" cy="185" r="72" class="drum"/>
+<text x="230" y="189" class="t-xs ink3" text-anchor="middle">drum</text>
+<rect x="120" y="296" width="280" height="8" class="pcb"/>
+<text x="130" y="288" class="t-xs ink2">module board (upright, near the back)</text>
+<rect x="396" y="291" width="18" height="18" class="hdr"/>
+<line x1="414" y1="300" x2="486" y2="300" class="pin"/>
+<rect x="466" y="350" width="10" height="30" class="standoff"/>
+<rect x="560" y="350" width="10" height="30" class="standoff"/>
+<path d="M452,250 H582 V350 H452 V324 L468,310 V290 L452,276 Z" class="holder"/>
+<text x="517" y="242" class="t-xs" text-anchor="middle">printed holder</text>
+<rect x="466" y="280" width="76" height="40" rx="2" class="pocket"/>
+<rect x="470" y="284" width="68" height="32" rx="2" class="housing"/>
+<text x="516" y="304" class="t-xxs ink2" text-anchor="middle">MTA</text>
+<text x="517" y="226" class="t-xs ink3" text-anchor="middle">pocket +0.5 mm each way</text>
+<text x="448" y="266" class="t-xs halo" text-anchor="end">funnel</text>
+<line x1="414" y1="300" x2="486" y2="300" class="pin"/>
+<circle cx="640" cy="365" r="8" class="f12"/>
+<circle cx="672" cy="365" r="8" class="fg"/>
+<text x="656" y="345" class="t-xs" text-anchor="middle">buses</text>
+<circle cx="500" cy="366" r="3.2" class="dot-a"/>
+<circle cx="512" cy="366" r="3.2" class="dot-b"/>
+<circle cx="524" cy="366" r="3.2" class="dot-e"/>
+<path d="M512,362 V262" class="wb data"/>
+<path d="M512,262 l-4,8 h8 z" class="fb"/>
+<text x="600" y="262" class="t-xs ink2">A, B, ENUM: through the housing front to</text>
+<text x="600" y="276" class="t-xs ink2">back, then a small loop back to the cable</text>
+<text x="600" y="290" class="t-xs ink2">and on up to the next row</text>
+<path d="M632,360 C600,350 560,336 530,318" class="w12 thin"/>
+<path d="M664,360 C620,348 566,338 522,318" class="wg thin"/>
+<text x="692" y="369" class="t-xs ink2">12 V (via fuse) + GND drops</text>
+<text x="600" y="210" class="t-xs ink3">header seated ~6 mm when the row hits the stop</text>
+      </svg></div>
+      <figcaption>The header pins stand in a vertical line, so the feed-through wires cross the housing from back
+        to front. The data cable makes a small loop at every row; leave ~3 cm of slack per row.</figcaption>
+    </figure>
+  </section>
+
+  <section class="col">
+    <h2>Wires</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th>Wire</th><th>Size</th><th>Runs</th><th>Carries</th></tr></thead>
+      <tbody>
+        <tr><td>+12 V bus</td><td class="num">12 AWG</td><td>PSU → main fuse → top row, unbroken</td><td class="num">≈ 25 A at the bottom</td></tr>
+        <tr><td>GND bus</td><td class="num">12 AWG</td><td>PSU → top row, unbroken</td><td class="num">≈ 25 A at the bottom</td></tr>
+        <tr><td>12 V drop</td><td class="num">22 AWG</td><td>bus → 5 A fuse → pin 1, ~10 cm</td><td class="num">≤ 1 A, 3 A stalled</td></tr>
+        <tr><td>GND drop</td><td class="num">22 AWG</td><td>bus → pin 2, ~10 cm</td><td class="num">≤ 1 A, 3 A stalled</td></tr>
+        <tr><td>A / B</td><td class="num">22 AWG pair</td><td>ESP32 → through every row's pins 3/4 → 120 Ω at the top</td><td>data</td></tr>
+        <tr><td>ENUM / spare</td><td class="num">22 AWG</td><td>through pin 5, or left out</td><td>TBD</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="col">
+    <h2>Parts per row</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th>Part</th><th>Qty</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>MTA-100 5-pin feed-through housing, 22 AWG (red)</td><td class="num">1</td><td>check the part number on Digi-Key before ordering</td></tr>
+        <tr><td>Inline mini-blade fuse holder + 5 A fuse</td><td class="num">1</td><td>on the 12 V drop</td></tr>
+        <tr><td>22 AWG wire</td><td class="num">~25 cm</td><td>the two drops</td></tr>
+        <tr><td>Printed holder with floating pocket and funnel</td><td class="num">1</td><td>screwed to the back board on standoffs</td></tr>
+        <tr><td>Printed row guide + end stop</td><td class="num">1 set</td><td>part of the back-board mounting</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:10px">One-off: MTA-100 hand tool 59803-1 (~$37), 12 AWG red + black (~2 m each), 22 AWG
+      twisted pair (~2.5 m with loops), 30–40 A main fuse, 12 V 50 A PSU, 120 Ω resistor.</p>
+  </section>
+
+  <section class="col notes">
+    <h2>Open points</h2>
+    <div class="note"><h3>Row current</h3><p>Drew measures a full row next; the 25 A, the PSU and the fuse sizes
+      follow from that.</p></div>
+    <div class="note"><h3>ENUM</h3><p>Not settled. A wire through every row's pin 5 joins all rows' ENUM together.
+      That fits one scheme and rules out the other.</p></div>
+    <div class="note"><h3>Tapping the bus</h3><p>Every row needs its own drop, fused or not, so the bus needs 21
+      taps. Soldering onto a stripped section is the standard way; cutting the bus at each row puts up to 25 A
+      through every joint. Two ways to avoid taps altogether are in <code>rail.md</code>: a 22 AWG pair per row
+      straight from fuse blocks in the bottom bay (leaning), or two drilled bus bars with ring terminals.</p></div>
+    <div class="note"><h3>IDC is press-once</h3><p>Re-pressing a wire into an MTA slot isn't recommended. Practise on
+      spare housings before doing the 21 on the rail.</p></div>
+  </section>
+</div>
