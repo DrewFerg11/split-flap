@@ -1,0 +1,14 @@
+# Release manifest for fw/module/vX.Y.Z (placeholder: nothing released yet). See .github/RELEASING.md.
+# A release also needs RELEASE-NOTES.md with the matching version.
+name = "Split-flap module firmware"
+component = "module"
+asset_prefix = "split-flap-module-fw"
+
+[build]
+system = "platformio"
+# Fixed bus addresses until ENUM works; then a single module env.
+envs = ["node1", "node2", "node3", "node4", "bridge"]
+artifacts = ["firmware.bin", "firmware.elf"]
+
+[links]
+"Module board" = "../../pcb/module-board/README.md"
