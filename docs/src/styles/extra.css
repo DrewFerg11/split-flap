@@ -1,0 +1,56 @@
+:root {
+  --sl-font: 'Archivo', system-ui, sans-serif;
+  --sl-font-mono: 'IBM Plex Mono', monospace;
+  --sl-color-accent-low: #302719;
+  --sl-color-accent: #dea84b;
+  --sl-color-accent-high: #f5d49c;
+  --sl-color-bg: #15191a;
+  --sl-color-bg-nav: #15191a;
+  --sl-color-bg-sidebar: #15191a;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6e8d2;
+  --sl-color-accent: #85520d;
+  --sl-color-accent-high: #563608;
+  --sl-color-bg: #f8f6f0;
+  --sl-color-bg-nav: #f8f6f0;
+  --sl-color-bg-sidebar: #f8f6f0;
+}
+
+.site-title {
+  color: var(--sl-color-white);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.hero h1 {
+  max-width: 11ch;
+  font-size: clamp(2.7rem, 5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.hero .tagline {
+  max-width: 37rem;
+  font-size: 1.1rem;
+}
+
+.hero > img {
+  width: min(100%, 26rem);
+  height: auto;
+  filter: drop-shadow(0 1.5rem 1.5rem #0002);
+}
+
+.eyebrow {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--sl-color-text-accent);
+}
+
+.card,
+.sl-link-card {
+  border-radius: 0.65rem;
+}

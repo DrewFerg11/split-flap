@@ -1,0 +1,59 @@
+---
+title: A little motion. A lot of possibility.
+description: A modular split-flap display, from a printed part to a wall of moving information.
+template: splash
+hero:
+  title: Information, with a little motion.
+  tagline: Build a modular split-flap display. Start with the parts, bring it to life with firmware, and make it your own with applications.
+  image:
+    file: ../../assets/board.svg
+    alt: A split-flap board reading BUILD, FLIP, REPEAT.
+  actions:
+    - text: Explore the project
+      link: guide/overview/
+      icon: right-arrow
+      variant: primary
+    - text: Display demos
+      link: demo/
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<p className="eyebrow">ONE SYSTEM · MANY POSSIBILITIES</p>
+
+## From the workbench to the wall
+
+Printed parts, custom electronics, and software designed to work together.
+Explore each piece of the build in the source repository.
+
+<CardGrid>
+  <LinkCard title="Hardware" description="Printable modules, mechanical parts, and physical assemblies." href="https://github.com/DrewFerg11/split-flap/tree/main/hardware" />
+  <LinkCard title="Electronics" description="KiCad boards, schematics, and fabrication packages." href="https://github.com/DrewFerg11/split-flap/tree/main/pcb" />
+  <LinkCard title="Firmware" description="The software that turns a drum into a display module." href="guide/firmware/" />
+  <LinkCard title="Applications" description="Layouts, flap sets, and display modes for each league." href="https://github.com/DrewFerg11/split-flap/tree/main/applications" />
+</CardGrid>
+
+## Make the motion mean something
+
+The same modular system can show a table, tell a story, or bring the matchday
+to your wall. Premier League (EPL) is the first planned application.
+
+<CardGrid>
+  <Card title="Explore before you build" icon="open-book">
+    Browser demos will show how layouts use physical modules and the flaps on
+    their drums. [See what's coming →](demo/)
+  </Card>
+  <Card title="Built in the open" icon="github">
+    Follow development, browse releases, and contribute improvements in the
+    [source repository](https://github.com/DrewFerg11/split-flap).
+  </Card>
+</CardGrid>
+
+:::note[On the workbench]
+The project is under active development. This site is the starting point for
+build guides, interactive demos, and firmware tools as they become available.
+:::
+
+Free to build, modify, and share for noncommercial use under the
+[project license](https://github.com/DrewFerg11/split-flap/blob/main/LICENSE.md).
