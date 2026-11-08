@@ -233,7 +233,9 @@ static void handle(const std::string &raw) {
   if (bcast) {
     sfctl::request(addr, c, f, payload, n);
     Serial.printf("[*] sent %s\n", cmd.c_str());
-    if (c == C_SET) for (int a = 1; a <= MAX_ADDR; a++) if (sfctl::known(a)) sfctl::autoSave(a);
+    if (c == C_SET)
+      for (int a = 1; a <= MAX_ADDR; a++)
+        if (sfctl::known(a) && !sfctl::autoSave(a)) Serial.printf("[%d] not stored here: run '%d save'\n", a, a);
     if (motion) follow(addr);
     return;
   }
