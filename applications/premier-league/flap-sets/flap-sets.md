@@ -90,7 +90,7 @@ The header row has two drums (name and digit), so there are four columns.
 | 50 | red | red | red | red |
 | 51 | white | white | white | white |
 
-The divider sits at 45 and the colours at 46–51 on every drum (divider moved here 2026-11-05). Kept in step with the per-set tables below: change those first, then this one.
+In firmware flap numbers: the colours sit at 46–51 on every drum, and the divider at 45 on every drum except the header digit, where 45 is still open (divider moved here 2026-11-05). The per-set tables below number **slots** 01–52, so the same divider is slot 46 and the colours slots 47–52. Kept in step with the per-set tables below: change those first, then this one.
 
 ---
 
