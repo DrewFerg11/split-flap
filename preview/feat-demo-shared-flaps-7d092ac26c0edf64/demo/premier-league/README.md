@@ -14,8 +14,7 @@ to write an ignored `flap-sets.generated.js` beside config.js. Astro copies
 this local ES module unchanged; no runtime fetch or bundler is needed.
 `flaps.js` maps JSON entries to renderer tokens without changing their indices.
 
-The current shared drum order has
-main-name, main-digit, and header-name dividers are at slot 46, directly
+The main-name, main-digit, and header-name dividers are at slot 46, directly
 before the six colours. Header digits retain the notes' three repeated
 13-item blocks and seven spares; no divider is printed on that drum.
 All four lists have 52 entries. UI counts come from list lengths.
