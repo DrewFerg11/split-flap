@@ -209,20 +209,28 @@ bool autoSave(uint8_t addr) {
   return getCfg(addr, v) && storeSettings(addr, v);
 }
 
-void forget(uint8_t addr) {
-  if (!inRange(addr)) return;
+// Clears the RAM copy only once the key is gone from flash, so a failed delete can't come back after a reboot.
+bool forget(uint8_t addr) {
+  if (!inRange(addr)) return false;
   char k[8]; key(k, sizeof k, addr);
-  prefs.begin(NVS_NS, false); prefs.remove(k); prefs.end();
+  bool ok = prefs.begin(NVS_NS, false) && (prefs.remove(k) || !prefs.isKey(k));   // nothing stored = done
+  prefs.end();
+  if (!ok) { say("[%u] deleting settings from flash failed\n", addr); return false; }
   savedValid[addr] = false;
   pushPending[addr] = false;
+  return true;
 }
 
 // A module that has reset still runs the compiled defaults. Reading its status makes getStatus() push its
 // saved settings back, so do this before the first real command to it.
-void restoreIfReset(uint8_t addr) {
+// False while a reset module's stored settings still haven't all gone through (the push is retried on
+// the next status read). A module that doesn't answer at all isn't a failure here: commands to it fail anyway.
+bool restoreIfReset(uint8_t addr) {
   Status s;
-  if (addr != ADDR_BCAST) { getStatus(addr, s); return; }
-  for (int a = 1; a <= MAX_ADDR; a++) if (knownAddr[a]) getStatus(a, s);
+  if (addr != ADDR_BCAST) { getStatus(addr, s); return !inRange(addr) || !pushPending[addr]; }
+  bool ok = true;
+  for (int a = 1; a <= MAX_ADDR; a++) if (knownAddr[a]) { getStatus(a, s); ok = ok && !pushPending[a]; }
+  return ok;
 }
 
 // --------------------------------------------------------- procedures ---

@@ -51,8 +51,8 @@ bool setKey(uint8_t addr, uint8_t key, int32_t value);
 bool hasSaved(uint8_t addr);
 bool storeSettings(uint8_t addr, const int32_t *v);   // false if the flash write failed
 bool autoSave(uint8_t addr);      // read the module's settings and store them
-void forget(uint8_t addr);
-void restoreIfReset(uint8_t addr);   // addr = broadcast: every known module
+bool forget(uint8_t addr);         // false if the flash delete failed
+bool restoreIfReset(uint8_t addr);   // broadcast = every known module; false while a push is still pending
 
 // ---- procedures
 // Polls until the module is idle. The abort hook stops every module and returns false.

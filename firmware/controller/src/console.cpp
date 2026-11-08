@@ -147,7 +147,12 @@ static void handle(const std::string &raw) {
   }
 
   // a module that has reset gets its saved settings back before the command reaches it
-  if (cmd != "x" && cmd != "forget") sfctl::restoreIfReset(addr);
+  // and nothing moves on compiled defaults while that push is incomplete
+  if (cmd != "x" && cmd != "forget" && !sfctl::restoreIfReset(addr)) {
+    Serial.printf("[%s] stored settings not fully pushed yet (bus errors): command not sent, try again\n",
+                  bcast ? "*" : String(addr).c_str());
+    return;
+  }
 
   if (cmd == "cal" || cmd == "here") {
     if (bcast) { Serial.println("needs one module"); return; }
@@ -189,8 +194,8 @@ static void handle(const std::string &raw) {
   }
   else if (cmd == "forget") {
     if (bcast) { Serial.println("needs an address"); return; }
-    sfctl::forget(addr);
-    Serial.printf("[%u] stored settings deleted (module keeps its current ones until reset)\n", addr);
+    if (sfctl::forget(addr))
+      Serial.printf("[%u] stored settings deleted (module keeps its current ones until reset)\n", addr);
     return;
   }
   else if (cmd == "cycle") {
