@@ -24,3 +24,6 @@ desktop.ini
 
 # Release packaging (tools/release/release.py)
 dist/
+
+# PlatformIO build output
+.pio/

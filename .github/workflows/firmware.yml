@@ -1,0 +1,67 @@
+# Unit tests + board builds for every PlatformIO project under firmware/ (and applications/).
+#   pio test -e native   when the project has an [env:native] (runs on the runner, no hardware)
+#   pio run              the project's default_envs: every board build must still compile
+# Read-only: pull_request (not _target), so fork PRs run without secrets or write access.
+name: CI / Firmware
+
+on:
+  pull_request:
+    paths: ["firmware/**", "applications/**", ".github/workflows/firmware.yml"]
+  push:
+    branches: [main]
+    paths: ["firmware/**", "applications/**", ".github/workflows/firmware.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firmware-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  projects:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      dirs: ${{ steps.find.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: find
+        run: |
+          dirs=$(find firmware applications -name platformio.ini -not -path '*/.pio/*' 2>/dev/null \
+                 | xargs -r -n1 dirname | sort | jq -R . | jq -sc .)
+          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+          echo "PlatformIO projects: $dirs"
+
+  test:
+    needs: projects
+    if: needs.projects.outputs.dirs != '[]'
+    name: ${{ matrix.dir }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.projects.outputs.dirs) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: pio-${{ runner.os }}-${{ hashFiles(format('{0}/platformio.ini', matrix.dir)) }}
+          restore-keys: pio-${{ runner.os }}-
+      - run: pip install platformio
+      - name: Unit tests
+        working-directory: ${{ matrix.dir }}
+        run: |
+          if grep -q '^\[env:native\]' platformio.ini; then
+            pio test -e native
+          else
+            echo "::notice::${{ matrix.dir }} has no [env:native]: no unit tests"
+          fi
+      - name: Build boards
+        working-directory: ${{ matrix.dir }}
+        run: pio run
