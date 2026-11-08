@@ -72,7 +72,7 @@ static const char *const KEY_HELP[K_COUNT] = {
   "ms to ramp slow->fast", "counts to ramp fast->slow", "counts of slow zone before target",
   "brake lead, counts before target", "learn lead from each move (0/1)", "counts from hall edge to flap 0",
   "flap after homing (-1 = none)", "flip motor direction (0/1)", "ms with no counts = stall",
-  "jam current mA (0 = off)",
+  "jam current, sensed mA = about I x duty (0 = off)",
 };
 static const int32_t KEY_DEFAULTS[K_COUNT] = {
   10856, 52, 40, 20, 25, 150, 200, 210, 8, 1,

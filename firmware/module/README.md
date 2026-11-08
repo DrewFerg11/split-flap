@@ -37,7 +37,8 @@ Commands: ping, status, stop, home, flap, drive, move, rev, set, get, zero, test
   (2026-10-29). If a drum turns the wrong way (flaps should fall), use `set dir 1` then `save` on the host.
 - The drive is slow decay (drive/brake PWM, as the TB6612 on the bench rig did), not the coast PWM that
   the bring-up firmware used, so low duties should start the motor now.
-- The `ilim` jam cut-off is off (0) until ISEN has been measured ([DESIGN-1](../../pcb/module-board/design/DESIGN-1.md) §14.1 step 4). ISEN reads about I × duty.
+- The `ilim` jam cut-off is off (0) until ISEN has been measured ([DESIGN-1](../../pcb/module-board/design/DESIGN-1.md) §14.1 step 4). ISEN reads about I × duty, and `ilim` is compared with that sensed value, not the
+  motor's actual current; settle the scaling when ISEN is measured.
 - The Arduino core's Serial is compiled out (`-DHAL_UART_MODULE_ONLY`). `src/usart.cpp` drives USART1/2 by
   register and owns their IRQs.
 - ENUM_IN (PB7) is reported in the status. ENUM_OUT isn't driven yet.

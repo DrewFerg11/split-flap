@@ -86,6 +86,17 @@ static void test_flap_target_never_goes_backwards() {
   TEST_ASSERT_EQUAL(at + CPR, flapTarget(0, 0, CPR, FLAPS, 0, 10, at));
 }
 
+static void test_flap_target_extremes() {
+  // cpr 1 and far from home: used to loop once per count; now closed form
+  TEST_ASSERT_EQUAL(2000000001, flapTarget(0, 0, 1, 1, 0, 0, 2000000000));
+  TEST_ASSERT_EQUAL(-1999999999, flapTarget(0, 0, 1, 1, 0, 0, -2000000000));
+  // hall zero far behind the count (long run since homing): still the next flap forward
+  int32_t now = 2000000000, tgt = flapTarget(-100000000, 0, CPR, FLAPS, 8, 10, now);
+  TEST_ASSERT_TRUE(tgt > now + 8 && tgt <= now + 8 + CPR);
+  int64_t flap10 = -100000000LL + lroundf(10 * countsPerFlap(CPR, FLAPS));
+  TEST_ASSERT_EQUAL(0, (int32_t)(((int64_t)tgt - flap10) % CPR));   // flap 10's position, whole revs on
+}
+
 static void test_current_flap() {
   float cpf = countsPerFlap(CPR, FLAPS);
   TEST_ASSERT_FLOAT_WITHIN(1e-4f, 0.0f, currentFlap(100 + 20, 100, 20, CPR, FLAPS));
@@ -180,6 +191,7 @@ int main() {
   RUN_TEST(test_flap_target_window);
   RUN_TEST(test_flap_target_lands_on_flap);
   RUN_TEST(test_flap_target_never_goes_backwards);
+  RUN_TEST(test_flap_target_extremes);
   RUN_TEST(test_current_flap);
   RUN_TEST(test_ramp_up);
   RUN_TEST(test_move_duty);

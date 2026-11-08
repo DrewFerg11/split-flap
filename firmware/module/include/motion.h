@@ -14,13 +14,14 @@ inline float countsPerFlap(int32_t cpr, int32_t flaps) { return (float)cpr / fla
 inline int wrapFlap(int flap, int flaps) { return ((flap % flaps) + flaps) % flaps; }
 
 // Next forward encoder position that shows `flap`: past now + lead (where a brake started now
-// would stop), and no more than one revolution beyond it.
+// would stop), and no more than one revolution beyond it. Closed form in 64 bits, so a small cpr or
+// a long time since homing costs nothing (it used to step one revolution per loop pass).
 inline int32_t flapTarget(int32_t hallZero, int32_t foff, int32_t cpr, int32_t flaps, int32_t lead,
                           int flap, int32_t now) {
-  int32_t base = hallZero + foff + lroundf(flap * countsPerFlap(cpr, flaps));
-  while (base <= now + lead) base += cpr;
-  while (base - cpr > now + lead) base -= cpr;
-  return base;
+  int64_t base = (int64_t)hallZero + foff + lroundf(flap * countsPerFlap(cpr, flaps));
+  int64_t d = (int64_t)now + lead - base;                 // smallest k with base + k*cpr > now + lead
+  int64_t k = (d >= 0 ? d / cpr : -((-d + cpr - 1) / cpr)) + 1;
+  return (int32_t)(base + k * cpr);
 }
 
 // Flap showing at encoder count `count`, 0 <= result < flaps (fractional between flaps).
