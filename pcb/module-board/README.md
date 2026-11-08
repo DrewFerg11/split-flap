@@ -1,6 +1,6 @@
 # Split-flap module board v0.1
 
-**Status (2026-10-27): board #1 brought up** (power, SWD flash, LED, hall, encoder, motor drive all pass; see `design/DESIGN-1.md` section 14 and `firmware/ltm-bringup/`). **Next:** other 9 boards, ISEN, RS-485 + enumeration firmware.
+**Status (2026-10-27): board #1 brought up** (power, SWD flash, LED, hall, encoder, motor drive all pass; see `design/DESIGN-1.md` section 14 and [`firmware/bringup`](../../firmware/bringup/)). **Next:** other 9 boards, ISEN, RS-485 + enumeration firmware.
 
 **Status (2026-10-19): ordered.** ERC 0, DRC 0 errors / 0 unconnected; the files in `fab/` are what was ordered.
 

@@ -10,6 +10,7 @@ source; binaries are never committed.
 | Folder | What |
 |---|---|
 | [`module/`](module/) | Module board firmware (STM32G031, RS-485 slave) + the RS-485 bridge build |
+| [`bringup/`](bringup/) | Bring-up test firmware for a newly assembled module board (LED, hall, encoder, motor self-test) |
 | [`controller/`](controller/) | Default controller (ESP32): the `sfctl` library + a serial bench console |
 | [`shared/`](shared/) | Code both ends compile in: [`sfbus.h`](shared/sfbus.h), the RS-485 bus protocol |
 
