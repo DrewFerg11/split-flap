@@ -1,0 +1,14 @@
+# Release manifest for fw/controller/vX.Y.Z (placeholder: nothing released yet). See .github/RELEASING.md.
+# A release also needs RELEASE-NOTES.md with the matching version.
+name = "Split-flap controller firmware"
+component = "controller"
+asset_prefix = "split-flap-controller-fw"
+
+[build]
+system = "platformio"
+envs = ["esp32dev", "s3", "c3"]
+# bootloader + partitions + app: what ESP Web Tools needs to flash a blank chip
+artifacts = ["firmware.bin", "bootloader.bin", "partitions.bin", "firmware.elf"]
+
+[links]
+"Module firmware" = "../module/README.md"
