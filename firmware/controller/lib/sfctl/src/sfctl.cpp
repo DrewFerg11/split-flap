@@ -226,14 +226,14 @@ void calibrate(uint8_t addr, int revs) {
   int32_t v[K_COUNT];
   if (!getCfg(addr, v)) { say("[%u] no reply\n", addr); return; }
   int32_t oldCpr = v[K_CPR];
-  setKey(addr, K_REST, -1);                    // stay at the magnet after each home
-  setKey(addr, K_CPR, 200000);                 // so the "no hall edge in 2 revs" guard can't trip
-  say("[%u] calibrating: %d drum revs at home duty %ld%% ('x' stops)\n", addr, revs, (long)v[K_HOME]);
+  // stay at the magnet after each home; a huge cpr so the "no hall edge in 2 revs" guard can't trip
+  bool ok = setKey(addr, K_REST, -1) && setKey(addr, K_CPR, 200000);
+  if (ok) say("[%u] calibrating: %d drum revs at home duty %ld%% ('x' stops)\n", addr, revs, (long)v[K_HOME]);
+  else say("[%u] no reply while preparing\n", addr);
 
   int32_t edges[33];
   Status s;
   Frame f;
-  bool ok = true;
   for (int i = 0; i <= revs && ok; i++) {
     ok = request(addr, C_HOME, f) && waitIdle(addr, s, 60000);
     if (ok && s.stop != R_HOMED) { say("[%u] home failed: %s\n", addr, STOP_NAMES[s.stop]); ok = false; }
@@ -242,8 +242,9 @@ void calibrate(uint8_t addr, int revs) {
     if (i) say("  rev %d: %ld counts\n", i, (long)(edges[i] - edges[i - 1]));
   }
   if (!ok) {
-    setKey(addr, K_CPR, oldCpr); setKey(addr, K_REST, v[K_REST]);
-    say("[%u] calibration abandoned, settings restored\n", addr);
+    bool restored = setKey(addr, K_CPR, oldCpr) && setKey(addr, K_REST, v[K_REST]);
+    if (restored) say("[%u] calibration abandoned, settings restored\n", addr);
+    else say("[%u] calibration abandoned; restoring cpr/rest failed: check 'cfg' (cpr should be %ld)\n", addr, (long)oldCpr);
     return;
   }
 
@@ -252,13 +253,14 @@ void calibrate(uint8_t addr, int revs) {
   // The slow zone, decel zone and brake lead were tuned in counts for 10856/rev: keep them the same share of a flap.
   int32_t zone = calib::rescale(v[K_ZONE], cpr, oldCpr), dzone = calib::rescale(v[K_DZONE], cpr, oldCpr);
   int32_t lead = calib::rescale(v[K_LEAD], cpr, oldCpr), foff = calib::rescale(v[K_FOFF], cpr, oldCpr);
-  setKey(addr, K_CPR, cpr);
-  setKey(addr, K_ZONE, zone);
-  setKey(addr, K_DZONE, dzone);
-  setKey(addr, K_LEAD, lead);
-  setKey(addr, K_FOFF, foff);
-  setKey(addr, K_REST, v[K_REST]);
-  autoSave(addr);
+  bool written = setKey(addr, K_CPR, cpr) && setKey(addr, K_ZONE, zone) && setKey(addr, K_DZONE, dzone)
+              && setKey(addr, K_LEAD, lead) && setKey(addr, K_FOFF, foff) && setKey(addr, K_REST, v[K_REST]);
+  autoSave(addr);                              // stores what the module actually has, written or not
+  if (!written) {
+    say("[%u] measured cpr %ld, but not every setting reached the module: check 'cfg' and run cal again\n",
+        addr, (long)cpr);
+    return;
+  }
   say("[%u] cpr %ld counts/rev (was %ld; revs agree within %ld counts) = %.1f counts/flap\n",
        addr, (long)cpr, (long)oldCpr, (long)spread, (float)cpr / v[K_FLAPS]);
   say("[%u] scaled zone %ld, dzone %ld, lead %ld, foff %ld. Next: f 0, nudge with 'go <counts>', then 'here 0'. 'save' when done\n",
@@ -271,7 +273,7 @@ void markHere(uint8_t addr, int n) {
   if (!getCfg(addr, v) || !getStatus(addr, s)) { say("[%u] no reply\n", addr); return; }
   if (!(s.flags & F_HOMED)) { say("[%u] not homed, run home first\n", addr); return; }
   int32_t foff = calib::foffForHere(v[K_FOFF], s.flapX100 / 100.0f, n, v[K_FLAPS], v[K_CPR]);
-  setKey(addr, K_FOFF, foff);
+  if (!setKey(addr, K_FOFF, foff)) { say("[%u] no reply, foff unchanged\n", addr); return; }
   autoSave(addr);
   say("[%u] was reading flap %.2f; foff %ld -> %ld, so this is now flap %d (saved)\n",
        addr, s.flapX100 / 100.0f, (long)v[K_FOFF], (long)foff, n);
