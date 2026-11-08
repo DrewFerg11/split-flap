@@ -29,6 +29,9 @@ deployment paths. Use `npm run preview` to inspect the exported site.
 - Write guides in `src/content/docs/` as Markdown. Use MDX for pages that
   need Starlight's built-in cards, grids, tabs, or steps.
 - Update the sidebar in `astro.config.mjs` when adding a guide.
+  Starlight adds the configured base to sidebar `link` values itself.
+  Use site-root paths there (such as `/demo/premier-league/`); raw HTML
+  anchors and custom Astro components need `import.meta.env.BASE_URL`.
 - The homepage is `src/content/docs/index.mdx`; its image is the project's own
   KiCad render at `../pcb/module-board/fab/images/league-table-module-v0.1-3d.png`.
   The workflow watches that source image too. Theme adjustments live in `src/styles/extra.css`.

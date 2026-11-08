@@ -27,6 +27,7 @@ export default defineConfig({
       sidebar: [
         { label: 'The project', slug: 'guide/overview' },
         { label: 'Display demos', slug: 'demo' },
+        // Starlight adds Astro's base to sidebar links; prefixing base here would duplicate it.
         { label: 'Premier League demo', link: '/demo/premier-league/' },
         { label: 'Firmware', slug: 'guide/firmware' },
       ],
