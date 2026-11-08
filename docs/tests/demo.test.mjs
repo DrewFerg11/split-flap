@@ -1,8 +1,51 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createDrum, forwardPath, prepareFrame, validateLayout } from '../public/demo/engine/drums.js';
 import { MotionController } from '../public/demo/engine/motion.js';
 import { app } from '../public/demo/premier-league/config.js';
+import { loadDrums } from '../public/demo/premier-league/flaps.js';
+import { wildcards } from '../public/demo/premier-league/config.js';
+
+const flapSets = JSON.parse(readFileSync(new URL('../../applications/premier-league/flap-sets/flap-sets.json', import.meta.url), 'utf8'));
+
+test('all application flap entries reach the demo at their firmware indices', () => {
+  const keys = { name: 'name', digit: 'digit', header_name: 'hname', header_digit: 'hdigit' };
+  const kinds = new Set();
+  assert.equal(Object.keys(app.drums).length, 4);
+  for (const [key, id] of Object.entries(keys)) {
+    assert.equal(app.drums[id].flaps.length, flapSets.flaps);
+    let wildcard = 0;
+    for (const [index, entry] of flapSets.drums[key].entries()) {
+      kinds.add(entry.kind);
+      let expected;
+      switch (entry.kind) {
+        case 'blank': expected = ''; break;
+        case 'open': expected = '@open'; break;
+        case 'divider': expected = '|divider'; break;
+        case 'text': expected = entry.text; break;
+        case 'colour': expected = 'c:' + entry.colour; break;
+        case 'symbol': expected = '#' + (entry.symbol === 'wildcard' ? wildcards[key][wildcard++]
+          : entry.symbol === 'pl-lion' ? 'lion' : entry.symbol); break;
+        default: assert.fail('Uncovered JSON kind: ' + entry.kind);
+      }
+      assert.equal(app.drums[id].flaps[index], expected, key + ' flap ' + index);
+    }
+  }
+  assert.deepEqual([...kinds].sort(), ['blank', 'colour', 'divider', 'open', 'symbol', 'text']);
+});
+
+test('application edits flow through the adapter and unsupported definitions fail clearly', () => {
+  const source = structuredClone(flapSets);
+  const options = { colours: app.colours, icons: app.icons, wildcards };
+  source.drums.name[1] = { kind: 'text', text: 'UPDATED CLUB' };
+  assert.equal(loadDrums(source, options).name.flaps[1], 'UPDATED CLUB');
+  source.drums.name[1] = { kind: 'future-kind' };
+  assert.throws(() => loadDrums(source, options), /Unsupported flap in name/);
+  assert.throws(() => loadDrums(flapSets, { ...options, wildcards: {} }), /Unsupported flap in digit/);
+  source.drums.name.pop();
+  assert.throws(() => loadDrums(source, options), /Invalid drum: name/);
+});
 
 test('forward paths wrap, stay put, use the nearest duplicate, and never target a spare', () => {
   const drum = createDrum('short', { flaps: ['', 'A', 'B', 'A', '@open'] });

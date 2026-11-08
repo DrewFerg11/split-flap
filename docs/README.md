@@ -41,6 +41,10 @@ deployment paths. Use `npm run preview` to inspect the exported site.
   generic route and demo list discover the manifest automatically. Reuse
   `public/demo/engine/` for board rendering, font metrics, validation, and
   forward-only motion. See the Premier League folder's README for port notes.
+- The Premier League drums come from `../applications/premier-league/flap-sets/flap-sets.json`.
+  Npm hooks generate an ignored local ES module before dev, check, build, and
+  demo tests. Restart the dev server after regenerating the application JSON.
+  Changes under that application's `flap-sets/` directory trigger site deployment.
 - `npm run test:demo` checks drum traversal, interruptions, unknown targets,
   a board larger than 20 rows, and every Premier League view in both seasons
   and clock modes. The engine has no league-specific names or row counts.

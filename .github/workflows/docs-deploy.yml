@@ -21,12 +21,14 @@ on:
       - 'feature/**'
     paths:
       - docs/**
+      - applications/premier-league/flap-sets/**
       - pcb/module-board/fab/images/league-table-module-v0.1-3d.png
       - .github/workflows/docs-deploy.yml
       - .github/workflows/docs-cleanup.yml
   pull_request:
     paths:
       - docs/**
+      - applications/premier-league/flap-sets/**
       - pcb/module-board/fab/images/league-table-module-v0.1-3d.png
       - .github/workflows/docs-deploy.yml
       - .github/workflows/docs-cleanup.yml
