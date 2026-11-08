@@ -55,7 +55,7 @@ export function stepFlap(module, next, { animate, signal }, renderFlap, duration
   if (!animate || signal.aborted) { paint(); return Promise.resolve(); }
   return new Promise((resolve) => {
     const fixed = document.createElement('div');
-    fixed.className = 'sf-fixed-top sf-half';
+    fixed.className = 'sf-fixed-bottom sf-half';
     fixed.append(renderFlap(old, module.type));
     const leaf = document.createElement('div');
     leaf.className = 'sf-leaf';
