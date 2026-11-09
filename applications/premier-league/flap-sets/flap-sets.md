@@ -1,7 +1,7 @@
 # Flap sets — the single list (52-flap modules)
 
-**This file is the one place for what goes on each flap.** The build READMEs (`stl/sf-name-flaps/`,
-`stl/sf-digit-flaps/`) and the outline files (`build/names200.json`, `build/digits52.json`) follow it.
+**This file is the one place for what goes on each flap.** The flap-set build files (`flaps-200x52-epl-teams`,
+`flaps-200x52-epl-header`, `flaps-033x52-epl-digits`) and the outline files (`build/names200.json`, `build/digits52.json`) follow it.
 Updated 2026-10-18 for the **52-flap** name (200 face) and digit modules. The 30-flap plan this file used to
 hold is kept at the end for reference.
 
