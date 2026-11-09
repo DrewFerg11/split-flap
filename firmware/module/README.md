@@ -7,11 +7,29 @@ Wiring pages: [`controller/wiring`](../controller/wiring/).
 
 ## Flash (ST-Link on J6 pads 2-5, board on 12 V)
 
-    pio run -e node1  -t upload     module at bus address 1 (node2..node4 for the next ones)
+    pio run -e node   -t upload     every module board: the same image, no address
     pio run -e bridge -t upload     the bridge board
 
-**Check after flashing:** a module blinks its address after reset (1 blink = address 1), then a 1 Hz heartbeat.
-The bridge shows only the heartbeat, plus flicker while traffic passes.
+**Check after flashing:** an unplaced module blinks its LED at 2 Hz. When the controller places it, it blinks its
+address (1 blink = address 1), then a 1 Hz heartbeat. The bridge shows only the heartbeat, plus flicker while
+traffic passes.
+
+## Addressing (ENUM chain)
+
+Every board runs the same image and powers up **unplaced** (address 0, ENUM_OUT low). The controller places
+the modules one at a time, in order along the row:
+
+1. It broadcasts `C_UNASSIGN`, then holds the first board's `ENUM_IN` high (pin 5 of the row's plug).
+2. It sends `C_DISCOVER` to address 0. Only an unplaced module with `ENUM_IN` high answers, with its Ping
+   (96-bit UID), in a reply slot picked from its UID and the request's seed. Rows that start together
+   answer in different slots; the host retries on a clash.
+3. It sends `C_ASSIGN` (UID + address). That module takes the address, raises `ENUM_OUT` and answers. The next
+   board's `ENUM_IN` is now high, so it is the one that answers the next `C_DISCOVER`.
+4. Repeat until a `C_DISCOVER` gets no answer.
+
+Addresses come out 1, 2, 3... in chain order. Nothing is stored on the module: addresses are re-assigned
+every time the controller starts (or on `enum`). Which row a group of modules belongs to is set once on the
+controller, not here.
 
 ## Tests
 
@@ -27,7 +45,7 @@ Native tests need a host C++ compiler; on Windows without one, run them in Docke
 
 ## Protocol
 [`firmware/shared/sfbus.h`](../shared/sfbus.h) (shared with the controller): 250 kbps, frames `A5 addr cmd len payload crc16`, address 0xFF = broadcast.
-Commands: ping, status, stop, home, flap, drive, move, rev, set, get, zero, test, ident.
+Commands: ping, status, stop, home, flap, drive, move, rev, set, get, zero, test, ident, discover, assign, unassign.
 
 ## Notes
 - Settings (`sfbus.h` `KEY_DEFAULTS`) are the N20 bench values: 52 flaps, 10856 counts/rev, fast 40 %,
@@ -41,7 +59,7 @@ Commands: ping, status, stop, home, flap, drive, move, rev, set, get, zero, test
   motor's actual current; settle the scaling when ISEN is measured.
 - The Arduino core's Serial is compiled out (`-DHAL_UART_MODULE_ONLY`). `src/usart.cpp` drives USART1/2 by
   register and owns their IRQs.
-- ENUM_IN (PB7) is reported in the status. ENUM_OUT isn't driven yet.
+- ENUM_IN (PB7) is reported in the status (`F_ENUM`); ENUM_OUT (PB9) goes high once the module is placed.
 
 ## Releases
 

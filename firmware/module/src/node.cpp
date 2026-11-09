@@ -1,12 +1,15 @@
 // Split-flap module firmware (STM32G031, pcb/module-board), bench version 1.
-// RS-485 slave at a fixed address (-DNODE_ADDR). Motion logic ported from the N20 bench sketch.
+// RS-485 slave. Motion logic ported from the N20 bench sketch.
+//
+// Addressing: the default build is the same image on every board. It powers up unplaced (address 0) and the
+// host places it over the bus, in ENUM chain order (sfbus.h).
 //
 //   PC15 LED                    PA0/PA1 ENC_A/B  TIM2 encoder mode (AF2)
 //   PA6/PA7 MOT_IN1/IN2 TIM3    PA4 ISEN_ADC     PA5 HALL (low = magnet, EXTI)
-//   PA9/PA10/PB3 USART1 bus     PB7 ENUM_IN
+//   PA9/PA10/PB3 USART1 bus     PB7 ENUM_IN      PB9 ENUM_OUT
 //
-// LED: after reset, N blinks = this board's address, then a 1 Hz heartbeat. Lit while the motor runs
-// and briefly on every frame addressed to it. C_IDENT blinks it fast for 3 s.
+// LED: unplaced = 2 Hz blink. Once placed, N blinks = this board's address, then a 1 Hz heartbeat. Lit while
+// the motor runs and briefly on every frame addressed to it. C_IDENT blinks it fast for 3 s.
 //
 // Motor drive is slow decay (drive / brake PWM), like the TB6612 on the bench rig, so the bench duty
 // settings carry over. One direction pin is held high and the other PWMs: IN low = drive, IN high = brake.
@@ -15,10 +18,6 @@
 #include "sfbus.h"
 #include "motion.h"
 #include "usart.h"
-
-#ifndef NODE_ADDR
-#error "build with -DNODE_ADDR=n (platformio envs node1..node4)"
-#endif
 
 using namespace sfbus;
 
@@ -35,6 +34,8 @@ static uint32_t pwmTop;                        // ARR + 1
 
 // --------------------------------------------------------------- state ---
 
+static uint8_t  myAddr = ADDR_NEW;             // 0 = not placed yet
+static uint32_t placedMs = 0;                  // when the address was taken (LED blink count starts here)
 static uint8_t  mode = M_IDLE;
 static uint8_t  stopReason = R_NONE;
 static bool     fresh = true;                  // no SET since reset
@@ -58,6 +59,11 @@ static int32_t  testC0 = 0, testC1 = 0;
 static volatile bool     hallHit = false;
 static volatile int32_t  hallRaw = 0;
 static volatile uint32_t hallEdges = 0;
+
+// ---------------------------------------------------------------- ENUM ---
+
+static bool enumIn() { return GPIOB->IDR & (1u << 7); }
+static void enumOut(bool on) { GPIOB->BSRR = on ? (1u << 9) : (1u << 25); }
 
 // ----------------------------------------------------------------- LED ---
 
@@ -190,12 +196,14 @@ static void moveBy(int32_t delta) {
 
 // ---------------------------------------------------------- bus replies ---
 
-static void reply(uint8_t cmd, const void *p, uint8_t n) {
+static void replyFrom(uint8_t addr, uint8_t cmd, const void *p, uint8_t n) {
   uint8_t buf[MAX_FRAME];
-  size_t len = encode(buf, NODE_ADDR, cmd | REPLY, p, n);
+  size_t len = encode(buf, addr, cmd | REPLY, p, n);
   delayMicroseconds(REPLY_DELAY_US);
   bus_write(buf, len);
 }
+
+static void reply(uint8_t cmd, const void *p, uint8_t n) { replyFrom(myAddr, cmd, p, n); }
 
 static void replyStatus(uint8_t cmd) {
   Status s = {};
@@ -217,9 +225,41 @@ static void replyStatus(uint8_t cmd) {
   reply(cmd, &s, sizeof s);
 }
 
+// C_DISCOVER / C_ASSIGN, sent to address 0. Only a module that is not placed and has ENUM_IN high takes part.
+static void handleEnum(const Frame &f) {
+  if (myAddr != ADDR_NEW || !enumIn()) return;
+  uint32_t uid[3] = { HAL_GetUIDw0(), HAL_GetUIDw1(), HAL_GetUIDw2() };
+  Ping me = { FW_VERSION, {} };
+  memcpy(me.uid, uid, sizeof uid);
+  if (f.cmd == C_DISCOVER) {
+    if (f.len < 1) return;
+    delayMicroseconds(discoverSlot(uid, f.data[0]) * SLOT_US);
+    replyFrom(ADDR_NEW, f.cmd, &me, sizeof me);
+  } else {
+    if (f.len < sizeof(AssignMsg)) return;
+    AssignMsg m;
+    memcpy(&m, f.data, sizeof m);
+    if (memcmp(m.uid, uid, sizeof uid) != 0 || m.addr < 1 || m.addr > 247) return;
+    myAddr = m.addr;
+    placedMs = millis();
+    enumOut(true);                             // the next module in the row may now be placed
+    replyFrom(myAddr, f.cmd, &me, sizeof me);
+  }
+}
+
 static void handle(const Frame &f) {
   if (f.cmd & REPLY) return;
-  bool mine = f.addr == NODE_ADDR;
+  if (f.cmd == C_DISCOVER || f.cmd == C_ASSIGN) { if (f.addr == ADDR_NEW) handleEnum(f); return; }
+  if (f.cmd == C_UNASSIGN) {
+    if (f.addr == ADDR_BCAST) {
+      if (mode != M_IDLE) stopNow(R_USER);
+      myAddr = ADDR_NEW;
+      enumOut(false);
+    }
+    return;
+  }
+  if (myAddr == ADDR_NEW) return;              // not placed: only the enumeration commands above
+  bool mine = f.addr == myAddr;
   if (!mine && f.addr != ADDR_BCAST) return;
   rxFlashUntil = millis() + 40;
 
@@ -307,6 +347,8 @@ void setup() {
   __HAL_RCC_GPIOB_CLK_ENABLE();                // PB7 ENUM_IN: input with pull-down
   GPIOB->MODER &= ~(3u << 14);
   GPIOB->PUPDR = (GPIOB->PUPDR & ~(3u << 14)) | (2u << 14);
+  enumOut(false);                              // PB9 ENUM_OUT: output, low until this module is placed
+  GPIOB->MODER = (GPIOB->MODER & ~(3u << 18)) | (1u << 18);
   // Co-bonded pins (PB8, PC14, PA8, PB0-2, PA11/12, PA15, PB4-6) stay analog: design §7.1.
 
   bus_init(BAUD);
@@ -390,10 +432,12 @@ void loop() {
     }
   }
 
-  // LED: address blinks after reset, then heartbeat; lit while moving / on traffic; fast blink to identify
+  // LED: unplaced = 2 Hz; address blinks once placed, then heartbeat; lit while moving / on traffic; fast blink to identify
   bool led;
+  uint32_t since = now - placedMs;
   if (now < identUntil)            led = (now % 200) < 100;
-  else if (now < 600u * NODE_ADDR + 500) led = now >= 500 && ((now - 500) % 600) < 300;
+  else if (myAddr == ADDR_NEW)     led = (now % 500) < 250;
+  else if (since < 600u * myAddr + 500) led = since >= 500 && ((since - 500) % 600) < 300;
   else                             led = mode != M_IDLE || now < rxFlashUntil || (now % 1000) < 60;
   ledSet(led);
 }

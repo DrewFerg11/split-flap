@@ -347,7 +347,7 @@
     <h2>Bring-up order</h2>
     <ol class="steps">
       <li>Boards 2 and 3: unpowered shorts check, power-up, flash, LED. Same as board 1 (DESIGN-1 §14.1 step 2).</li>
-      <li>Flash each board with its own address build (<code>firmware/module</code> envs <code>node1</code>–<code>node3</code>).</li>
+      <li>Flash every board with the same <code>node</code> build (<code>firmware/module</code>); the controller addresses them over the ENUM chain.</li>
       <li>Board 1 alone on the adapter: <code>1 ping</code>, <code>1 home</code>.</li>
       <li>ENUM check (once the host drives the ENUM pin): <code>s</code> shows <code>enum 1</code> on board 1 with the pin high, 0 with it low.</li>
       <li>Plug in boards 2 and 3, set the JP_TERM shunt on board 3, then <code>s</code> (status of all), <code>* home</code>, <code>* go 17</code>.</li>

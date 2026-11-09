@@ -27,8 +27,22 @@ flashed with the module's `bridge` env, wired to its J6 pads 5-7). Wiring pages:
     pio run -e c3 -t upload        build + flash (your board's env)
     pio device monitor -e c3       console, then type ? for commands
 
-The serial port is autodetected; add `upload_port` / `monitor_port` to an env to pin one. At boot it
-scans addresses 1-8 and selects the first module it finds.
+The serial port is autodetected; add `upload_port` / `monitor_port` to an env to pin one. At boot it places
+the modules (below) and selects the first one.
+
+## Placing modules (ENUM chain)
+
+Boards flashed with the module's `node` env have no address of their own; `enum` (and boot) gives them 1, 2, 3...
+in order along the row. Wire the ESP's **ENUM pin to pin 5 of the row's plug** (the first board's right-edge
+header; its `ENUM_IN`), on top of the usual bus wires and a common GND:
+
+| Env | ENUM pin |
+|---|---|
+| `esp32dev` | GPIO18 |
+| `s3`, `c3` | GPIO7 |
+
+It is a 3.3 V logic signal: never 12 V. `Pins.enumHead = -1` turns the pin off if you tie pin 5 to 3.3 V instead.
+Output lists each module's address and its position in the row (0 = next to the plug).
 
 ## First run, one module
 

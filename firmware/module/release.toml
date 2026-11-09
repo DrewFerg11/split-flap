@@ -6,8 +6,8 @@ asset_prefix = "split-flap-module-fw"
 
 [build]
 system = "platformio"
-# Fixed bus addresses until ENUM works; then a single module env.
-envs = ["node1", "node2", "node3", "node4", "bridge"]
+# "node" is the one image for every board (placed by the ESP over the ENUM chain).
+envs = ["node", "bridge"]
 artifacts = ["firmware.bin", "firmware.elf"]
 
 [links]

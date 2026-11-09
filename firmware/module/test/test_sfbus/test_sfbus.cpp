@@ -12,6 +12,8 @@ void tearDown() {}
 // in the field and the controller at once, so it has to be deliberate (and bump FW_VERSION).
 static_assert(sizeof(SetMsg) == 5, "SetMsg wire size");
 static_assert(sizeof(Ping) == 13, "Ping wire size");
+static_assert(sizeof(AssignMsg) == 13, "AssignMsg wire size");
+static_assert(sizeof(AssignMsg) <= MAX_PAYLOAD, "AssignMsg fits one frame");
 static_assert(sizeof(Status) == 26, "Status wire size");
 static_assert(sizeof(Status) <= MAX_PAYLOAD, "Status fits one frame");
 static_assert(K_COUNT * sizeof(int32_t) <= MAX_PAYLOAD, "C_GET settings fit one frame");
@@ -155,6 +157,32 @@ static void test_defaults() {
   TEST_ASSERT_TRUE(KEY_DEFAULTS[K_SLOW] < KEY_DEFAULTS[K_FAST]);
 }
 
+// Discovery slots: in range, and the seed moves a module's slot, so two modules that clash get another try.
+static void test_discover_slot_range_and_seed() {
+  const uint32_t a[3] = {0x00410021, 0x12345678, 0x9ABCDEF0}, b[3] = {0x00410021, 0x12345678, 0x9ABCDEF1};
+  int moved = 0, apart = 0;
+  for (int seed = 0; seed < 256; seed++) {
+    TEST_ASSERT_TRUE(discoverSlot(a, (uint8_t)seed) < DISCOVER_SLOTS);
+    if (discoverSlot(a, (uint8_t)seed) != discoverSlot(a, (uint8_t)(seed + 1))) moved++;
+    if (discoverSlot(a, (uint8_t)seed) != discoverSlot(b, (uint8_t)seed)) apart++;
+  }
+  TEST_ASSERT_TRUE(moved > 128);               // about 7/8 of seeds change the slot
+  TEST_ASSERT_TRUE(apart > 128);               // two near-identical UIDs mostly land in different slots
+}
+
+// A Ping reply must fit inside one slot, or neighbouring slots would overlap on the wire (10 bits per byte).
+static void test_ping_reply_fits_a_slot() {
+  uint32_t wireUs = (uint32_t)(6 + sizeof(Ping)) * 10u * 1000000u / BAUD;
+  TEST_ASSERT_TRUE(wireUs < SLOT_US);
+}
+
+static void test_enum_commands_follow_ident() {
+  TEST_ASSERT_EQUAL(C_IDENT + 1, C_DISCOVER);  // new commands appended: the existing numbers didn't move
+  TEST_ASSERT_EQUAL(C_DISCOVER + 1, C_ASSIGN);
+  TEST_ASSERT_EQUAL(C_ASSIGN + 1, C_UNASSIGN);
+  TEST_ASSERT_EQUAL(13, C_IDENT);
+}
+
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_crc16_modbus_check_value);
@@ -169,5 +197,8 @@ int main() {
   RUN_TEST(test_gap_of_exactly_gap_ms_is_kept);
   RUN_TEST(test_name_tables_match_enums);
   RUN_TEST(test_defaults);
+  RUN_TEST(test_discover_slot_range_and_seed);
+  RUN_TEST(test_ping_reply_fits_a_slot);
+  RUN_TEST(test_enum_commands_follow_ident);
   return UNITY_END();
 }

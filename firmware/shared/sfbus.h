@@ -16,7 +16,7 @@ const uint8_t  SYNC        = 0xA5;
 const uint8_t  ADDR_BCAST  = 0xFF;
 const uint8_t  REPLY       = 0x80;
 const uint32_t BAUD        = 250000;
-const uint8_t  FW_VERSION  = 1;
+const uint8_t  FW_VERSION  = 2;
 const uint8_t  MAX_PAYLOAD = 80;
 const uint8_t  MAX_FRAME   = MAX_PAYLOAD + 6;
 const uint32_t GAP_MS      = 3;       // a gap this long inside a frame drops it
@@ -35,7 +35,18 @@ enum Cmd : uint8_t {
   C_ZERO,       // zero the encoder count (forgets home)
   C_TEST,       // motor/encoder self-test, result in Status.stop
   C_IDENT,      // blink the LED fast for 3 s
+  C_DISCOVER,   // addr 0, u8 seed: unplaced modules whose ENUM_IN is high answer with Ping, each in its own slot
+  C_ASSIGN,     // addr 0, AssignMsg: the module with that UID takes the address, raises ENUM_OUT, answers Ping from it
+  C_UNASSIGN,   // broadcast only: forget the address, drop ENUM_OUT (the host then enumerates again)
 };
+
+// Auto-addressing: every module runs the same firmware and powers up unplaced (address 0). The host holds the
+// first module's ENUM_IN high; a placed module raises its ENUM_OUT, which is the next one's ENUM_IN. So the
+// modules in a row get placed one at a time, in order. Several rows may be eligible at once (one head each):
+// they answer a C_DISCOVER in different slots, chosen from their UID and the seed, and the host retries on a clash.
+const uint8_t  ADDR_NEW    = 0;
+const uint8_t  DISCOVER_SLOTS = 8;
+const uint32_t SLOT_US     = 2000;   // longer than a Ping reply on the wire (19 bytes = 0.8 ms)
 
 enum Mode : uint8_t { M_IDLE, M_DRIVE, M_HOMING, M_MOVE, M_SETTLE, M_TEST };
 static const char *const MODE_NAMES[] = { "idle", "drive", "homing", "move", "settle", "test" };
@@ -85,6 +96,18 @@ struct __attribute__((packed)) Ping {
   uint8_t  fw;
   uint32_t uid[3];     // STM32 96-bit unique ID
 };
+
+struct __attribute__((packed)) AssignMsg {
+  uint32_t uid[3];     // the module being placed (from its Ping)
+  uint8_t  addr;       // 1..247
+};
+
+// Which reply slot (0..DISCOVER_SLOTS-1) a module takes for a given seed.
+inline uint8_t discoverSlot(const uint32_t uid[3], uint8_t seed) {
+  uint32_t x = uid[0] ^ (uid[1] * 31u) ^ (uid[2] * 131u) ^ ((uint32_t)seed * 0x9E3779B1u);
+  x ^= x >> 15; x *= 0x2C1B3C6Du; x ^= x >> 12;
+  return (uint8_t)(x % DISCOVER_SLOTS);
+}
 
 struct __attribute__((packed)) Status {
   uint8_t  fw;

@@ -61,6 +61,12 @@ static void printResult(uint8_t addr, const Status &s) {
   }
 }
 
+static void printPlaced(uint8_t a, int position, const Ping &p) {
+  Serial.printf("  [%d] position %d in its row  fw %u  uid %08lx-%08lx-%08lx%s\n", a, position, p.fw,
+                (unsigned long)p.uid[0], (unsigned long)p.uid[1], (unsigned long)p.uid[2],
+                sfctl::hasSaved(a) ? "  (saved settings here)" : "");
+}
+
 static void printFound(uint8_t a, const Ping &p) {
   Serial.printf("  [%d] fw %u  uid %08lx-%08lx-%08lx%s\n", a, p.fw, (unsigned long)p.uid[0],
                 (unsigned long)p.uid[1], (unsigned long)p.uid[2], sfctl::hasSaved(a) ? "  (saved settings here)" : "");
@@ -87,12 +93,21 @@ static void scan(int maxAddr) {
                 found ? "" : ". Check: 12 V on, A/B not swapped, ESP TX->RX crossed, bridge/adapter powered");
 }
 
+// Auto-address the modules over the ENUM chain.
+static void place() {
+  Serial.println("placing modules (ENUM chain)");
+  int n = sfctl::enumerate(printPlaced);
+  Serial.printf("%d module%s placed\n", n, n == 1 ? "" : "s");
+  if (!n) Serial.println("none placed. Check: 12 V on, A/B not swapped, ESP TX->RX crossed, ENUM wire on board 1 pin 5");
+}
+
 static void printHelp() {
   Serial.print(
     "\nSplit-flap controller - modules over RS-485\n"
     "  [addr] <command>   addr = 1..32 or * (all, no replies). No addr = the selected module.\n"
     "  a; b; c         several commands at once, e.g.  3 f 1; 1 f 2\n"
     "  ?               this list\n"
+    "  enum            place the modules: unplaces them all, then gives 1, 2, 3... in chain order (needs the ENUM wire)\n"
     "  scan [n]        find modules 1..n (default 8)\n"
     "  use <addr>      select a module\n"
     "  x               STOP ALL (broadcast)\n"
@@ -126,6 +141,7 @@ static void handle(const std::string &raw) {
   Frame f;
 
   if (cmd == "?" || cmd == "help") { printHelp(); return; }
+  if (cmd == "enum") { place(); for (int a = 1; a <= MAX_ADDR; a++) if (sfctl::known(a)) { cur = a; break; } return; }
   if (cmd == "scan") { scan(hasArg ? constrain(arg, 1, MAX_ADDR) : 8); return; }
   if (cmd == "use")  { if (hasArg) cur = constrain(arg, 1, MAX_ADDR); Serial.printf("selected module %u\n", cur); return; }
   if (cmd == "x" && !explicitAddr) addr = ADDR_BCAST, bcast = true;
@@ -263,7 +279,7 @@ void setup() {
   sfctl::setAbort(xTyped);
   sfctl::begin();
   Serial.println("\n=== Split-flap controller (modules over RS-485) ===  ? for commands");
-  scan(8);
+  place();
   for (int a = 1; a <= MAX_ADDR; a++) if (sfctl::known(a)) { cur = a; break; }
   Serial.printf("selected module %u\n", cur);
 }
