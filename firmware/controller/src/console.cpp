@@ -98,7 +98,7 @@ static void place() {
   Serial.println("placing modules (ENUM chain)");
   int n = sfctl::enumerate(printPlaced);
   Serial.printf("%d module%s placed\n", n, n == 1 ? "" : "s");
-  if (!n) Serial.println("none placed. Check: 12 V on, A/B not swapped, ESP TX->RX crossed, ENUM wire on board 1 pin 5");
+  if (!n) Serial.println("none placed. Check: 12 V on, A/B not swapped, ESP TX->RX crossed, board 1 pin 5 high (ESP ENUM wire, or the bridge build flashed)");
 }
 
 static void printHelp() {
@@ -107,7 +107,7 @@ static void printHelp() {
     "  [addr] <command>   addr = 1..32 or * (all, no replies). No addr = the selected module.\n"
     "  a; b; c         several commands at once, e.g.  3 f 1; 1 f 2\n"
     "  ?               this list\n"
-    "  enum            place the modules: unplaces them all, then gives 1, 2, 3... in chain order (needs the ENUM wire)\n"
+    "  enum            place the modules: unplaces them all, then gives 1, 2, 3... in chain order (needs board 1 pin 5 high)\n"
     "  scan [n]        find modules 1..n (default 8)\n"
     "  use <addr>      select a module\n"
     "  x               STOP ALL (broadcast)\n"
