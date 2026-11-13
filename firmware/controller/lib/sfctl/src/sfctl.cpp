@@ -269,9 +269,12 @@ int enumerate(FoundFn found) {
       silent = clashed = 0;
       placed += placeAll(r, n, next, position, found);
     }
-    if (silent < 2 && next <= MAX_ADDR) say("position %d: some modules could not be placed\n", position);
-    if (placed == 0) break;                    // nothing at this position = the end of every row
     count += placed;
+    if (silent < 2 && next <= MAX_ADDR) {      // someone is still unplaced here: advancing would shift them a position
+      say("position %d: some modules could not be placed; stopped here, run enum again\n", position);
+      break;
+    }
+    if (placed == 0) break;                    // nothing at this position = the end of every row
     for (int i = 0; i < 2; i++) { sendFrame(ADDR_BCAST, C_ADVANCE, nullptr, 0); delay(2); }
   }
   timeoutCount = 0;

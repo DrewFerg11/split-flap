@@ -48,7 +48,8 @@ int scan(int maxAddr, void (*found)(uint8_t addr, const sfbus::Ping &p) = nullpt
 // Auto-addressing (sfbus.h): unplaces every module, raises the ENUM head, then places the modules one at a
 // time in chain order, giving them addresses 1, 2, 3... Rows that start together are placed side by side:
 // position is the module's place in its row (0 = next to the plug). Returns how many were placed, each
-// reported to found(), and re-sends the settings stored for its address.
+// reported to found(), and re-sends the settings stored for its address. If a position can't be finished
+// (repeated clashes, a module that won't take its address) it stops there rather than misplace anyone.
 using FoundFn = void (*)(uint8_t addr, int position, const sfbus::Ping &p);
 int enumerate(FoundFn found = nullptr);
 
