@@ -180,6 +180,7 @@ static void test_enum_commands_follow_ident() {
   TEST_ASSERT_EQUAL(C_IDENT + 1, C_DISCOVER);  // new commands appended: the existing numbers didn't move
   TEST_ASSERT_EQUAL(C_DISCOVER + 1, C_ASSIGN);
   TEST_ASSERT_EQUAL(C_ASSIGN + 1, C_UNASSIGN);
+  TEST_ASSERT_EQUAL(C_UNASSIGN + 1, C_ADVANCE);
   TEST_ASSERT_EQUAL(13, C_IDENT);
 }
 

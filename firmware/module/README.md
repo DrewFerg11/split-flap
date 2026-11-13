@@ -23,9 +23,11 @@ the modules one at a time, in order along the row:
 2. It sends `C_DISCOVER` to address 0. Only an unplaced module with `ENUM_IN` high answers, with its Ping
    (96-bit UID), in a reply slot picked from its UID and the request's seed. Rows that start together
    answer in different slots; the host retries on a clash.
-3. It sends `C_ASSIGN` (UID + address). That module takes the address, raises `ENUM_OUT` and answers. The next
-   board's `ENUM_IN` is now high, so it is the one that answers the next `C_DISCOVER`.
-4. Repeat until a `C_DISCOVER` gets no answer.
+3. It sends `C_ASSIGN` (UID + address). That module takes the address and answers. Steps 2-3 repeat until a
+   `C_DISCOVER` gets no answer, so every row's module at this position is placed, even after a clash.
+4. It broadcasts `C_ADVANCE`: every placed module raises `ENUM_OUT`, so the next board in each row is now the
+   one that answers. All rows move on together, which keeps each module's position in its row exact.
+5. Repeat until a position gets no answer at all.
 
 Addresses come out 1, 2, 3... in chain order. Nothing is stored on the module: addresses are re-assigned
 every time the controller starts (or on `enum`). Which row a group of modules belongs to is set once on the
@@ -59,7 +61,7 @@ Commands: ping, status, stop, home, flap, drive, move, rev, set, get, zero, test
   motor's actual current; settle the scaling when ISEN is measured.
 - The Arduino core's Serial is compiled out (`-DHAL_UART_MODULE_ONLY`). `src/usart.cpp` drives USART1/2 by
   register and owns their IRQs.
-- ENUM_IN (PB7) is reported in the status (`F_ENUM`); ENUM_OUT (PB9) goes high once the module is placed.
+- ENUM_IN (PB7) is reported in the status (`F_ENUM`); ENUM_OUT (PB9) goes high on the first `C_ADVANCE` after the module is placed.
 
 ## Releases
 

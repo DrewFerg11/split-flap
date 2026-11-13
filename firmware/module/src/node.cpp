@@ -241,8 +241,7 @@ static void handleEnum(const Frame &f) {
     memcpy(&m, f.data, sizeof m);
     if (memcmp(m.uid, uid, sizeof uid) != 0 || m.addr < 1 || m.addr > 247) return;
     myAddr = m.addr;
-    placedMs = millis();
-    enumOut(true);                             // the next module in the row may now be placed
+    placedMs = millis();                       // ENUM_OUT stays low until C_ADVANCE
     replyFrom(myAddr, f.cmd, &me, sizeof me);
   }
 }
@@ -256,6 +255,10 @@ static void handle(const Frame &f) {
       myAddr = ADDR_NEW;
       enumOut(false);
     }
+    return;
+  }
+  if (f.cmd == C_ADVANCE) {                    // the next module in the row may now be placed
+    if (f.addr == ADDR_BCAST && myAddr != ADDR_NEW) enumOut(true);
     return;
   }
   if (myAddr == ADDR_NEW) return;              // not placed: only the enumeration commands above

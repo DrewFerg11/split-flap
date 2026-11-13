@@ -36,14 +36,16 @@ enum Cmd : uint8_t {
   C_TEST,       // motor/encoder self-test, result in Status.stop
   C_IDENT,      // blink the LED fast for 3 s
   C_DISCOVER,   // addr 0, u8 seed: unplaced modules whose ENUM_IN is high answer with Ping, each in its own slot
-  C_ASSIGN,     // addr 0, AssignMsg: the module with that UID takes the address, raises ENUM_OUT, answers Ping from it
+  C_ASSIGN,     // addr 0, AssignMsg: the module with that UID takes the address and answers Ping from it
   C_UNASSIGN,   // broadcast only: forget the address, drop ENUM_OUT (the host then enumerates again)
+  C_ADVANCE,    // broadcast only: every placed module raises ENUM_OUT, so the next module in each row is eligible
 };
 
 // Auto-addressing: every module runs the same firmware and powers up unplaced (address 0). The host holds the
-// first module's ENUM_IN high; a placed module raises its ENUM_OUT, which is the next one's ENUM_IN. So the
-// modules in a row get placed one at a time, in order. Several rows may be eligible at once (one head each):
+// first module's ENUM_IN high; on C_ADVANCE a placed module raises its ENUM_OUT, which is the next one's ENUM_IN.
+// So the modules in a row get placed one at a time, in order. Several rows may be eligible at once (one head each):
 // they answer a C_DISCOVER in different slots, chosen from their UID and the seed, and the host retries on a clash.
+// The host sends C_ADVANCE only once every eligible module is placed, so all rows move one position in step.
 const uint8_t  ADDR_NEW    = 0;
 const uint8_t  DISCOVER_SLOTS = 8;
 const uint32_t SLOT_US     = 2000;   // longer than a Ping reply on the wire (19 bytes = 0.8 ms)

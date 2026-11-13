@@ -214,6 +214,35 @@ static int collect(uint8_t cmd, Frame *out, int max, bool &sawBytes) {
   return n;
 }
 
+// Gives each module that answered a discover round the next address. Returns how many took one.
+static int placeAll(const Frame *r, int n, uint8_t &next, int position, FoundFn found) {
+  int placed = 0;
+  for (int i = 0; i < n && next <= MAX_ADDR; i++) {
+    Ping p;
+    if (r[i].len < sizeof p) continue;
+    memcpy(&p, r[i].data, sizeof p);
+    AssignMsg m;
+    memcpy(m.uid, p.uid, sizeof m.uid);
+    m.addr = next;
+    Frame a;
+    bool ok = false;
+    for (int t = 0; t < 2 && !ok; t++) {
+      sendFrame(ADDR_NEW, C_ASSIGN, &m, sizeof m);
+      ok = waitReply(next, C_ASSIGN, a);
+    }
+    Ping q;
+    if (!ok) ok = ping(next, q, 2);          // the module may have taken the address and lost only its reply
+    if (!ok) { say("module %08lx-%08lx-%08lx did not take address %u\n", (unsigned long)p.uid[0],
+                   (unsigned long)p.uid[1], (unsigned long)p.uid[2], next); continue; }
+    knownAddr[next] = true;
+    placed++;
+    if (found) found(next, position, p);
+    restoreIfReset(next);
+    next++;
+  }
+  return placed;
+}
+
 int enumerate(FoundFn found) {
   for (int a = 1; a <= MAX_ADDR; a++) knownAddr[a] = false;
 
@@ -224,42 +253,26 @@ int enumerate(FoundFn found) {
   if (pins.enumHead >= 0) digitalWrite(pins.enumHead, HIGH);
   delay(20);
 
-  int count = 0, position = 0, silent = 0, clashed = 0;
+  // One position at a time: discover rounds repeat until nobody eligible is left (a clash, a lost assign or more
+  // than MAX_PER_ROUND heads leaves someone unplaced, who answers again), then C_ADVANCE moves every row on together.
+  int count = 0;
   uint8_t next = 1;
-  while (next <= MAX_ADDR && silent < 2 && clashed < 6) {
-    uint8_t seed = (uint8_t)esp_random();
-    sendFrame(ADDR_NEW, C_DISCOVER, &seed, 1);
-    Frame r[MAX_PER_ROUND];
-    bool heard;
-    int n = collect(C_DISCOVER, r, MAX_PER_ROUND, heard);
-    if (n == 0) { if (heard) clashed++; else silent++; continue; }   // nothing = end of the chain
-    silent = clashed = 0;
-
-    for (int i = 0; i < n && next <= MAX_ADDR; i++) {
-      Ping p;
-      if (r[i].len < sizeof p) continue;
-      memcpy(&p, r[i].data, sizeof p);
-      AssignMsg m;
-      memcpy(m.uid, p.uid, sizeof m.uid);
-      m.addr = next;
-      Frame a;
-      bool ok = false;
-      for (int t = 0; t < 2 && !ok; t++) {
-        sendFrame(ADDR_NEW, C_ASSIGN, &m, sizeof m);
-        ok = waitReply(next, C_ASSIGN, a);
-      }
-      Ping q;
-      if (!ok) ok = ping(next, q, 2);          // the module may have taken the address and lost only its reply
-      if (!ok) { say("module %08lx-%08lx-%08lx did not take address %u\n", (unsigned long)p.uid[0],
-                     (unsigned long)p.uid[1], (unsigned long)p.uid[2], next); continue; }
-      knownAddr[next] = true;
-      count++;
-      if (found) found(next, position, p);
-      restoreIfReset(next);
-      next++;
+  for (int position = 0; next <= MAX_ADDR; position++) {
+    int placed = 0, silent = 0, clashed = 0, rounds = 0;
+    while (next <= MAX_ADDR && silent < 2 && clashed < 6 && rounds++ < 24) {
+      uint8_t seed = (uint8_t)esp_random();
+      sendFrame(ADDR_NEW, C_DISCOVER, &seed, 1);
+      Frame r[MAX_PER_ROUND];
+      bool heard;
+      int n = collect(C_DISCOVER, r, MAX_PER_ROUND, heard);
+      if (n == 0) { if (heard) clashed++; else silent++; continue; }   // nothing = everyone here is placed
+      silent = clashed = 0;
+      placed += placeAll(r, n, next, position, found);
     }
-    position++;
-    delay(2);                                  // the modules just placed have raised ENUM_OUT
+    if (silent < 2 && next <= MAX_ADDR) say("position %d: some modules could not be placed\n", position);
+    if (placed == 0) break;                    // nothing at this position = the end of every row
+    count += placed;
+    for (int i = 0; i < 2; i++) { sendFrame(ADDR_BCAST, C_ADVANCE, nullptr, 0); delay(2); }
   }
   timeoutCount = 0;
   return count;
