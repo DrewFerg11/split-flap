@@ -11,7 +11,7 @@ fixed at 20: the EPL build is likely 21 (a header row), and the display is desig
 | Part | State | Where |
 |---|---|---|
 | Module board | v0.1 ordered and brought up (power, SWD, motor, encoder, hall, RS-485) | [`pcb/module-board`](../../pcb/module-board/) |
-| Module firmware | fixed bus addresses, homing, flap moves, calibration; ENUM auto-addressing not yet | [`firmware/module`](../../firmware/module/) |
+| Module firmware | auto-addressing over the ENUM chain, homing, flap moves, calibration | [`firmware/module`](../../firmware/module/) |
 | Controller | ESP32 serial bench console; Wi-Fi, web UI, Home Assistant and this app's firmware are planned (issues #10-#15) | [`firmware/controller`](../../firmware/controller/) |
 | Mechanics | 52-flap digit module built and printed; name module designed, not yet printed. The flap print files still use the old numbering (home = slot 51) and need regenerating for the planned sets | `hardware/modules/`, kept local (git-ignored) until 3D-model distribution is decided |
 | Flap sets | the planned 52-flap name, digit and header drums | [`flap-sets/`](flap-sets/) |

@@ -11,12 +11,16 @@
 
 namespace sfctl {
 
-const uint8_t  MAX_ADDR = 32;     // module addresses 1..MAX_ADDR
+const uint8_t  MAX_ADDR = sfbus::ADDR_MAX;   // module addresses 1..MAX_ADDR
 const uint32_t REPLY_MS = 25;     // wait this long for a reply before a retry
 
-struct Pins { int rx, tx, de; };  // de: the transceiver's DE+RE pin (unused with the bridge board)
+// de: the transceiver's DE+RE pin (unused with the bridge board).
+// enumHead: drives the first module's ENUM_IN (pin 5 of the row's plug) for enumerate(); -1 = not wired,
+// tie that pin to 3.3 V yourself.
+struct Pins { int rx, tx, de, enumHead; };
 
-// Pins and UART for this chip: ESP32 UART2 on GPIO16/17, S3/C3 UART1 on GPIO5/6; DE+RE on GPIO4.
+// Pins and UART for this chip: ESP32 UART2 on GPIO16/17, S3/C3 UART1 on GPIO5/6; DE+RE on GPIO4;
+// ENUM head on GPIO18 (ESP32) / GPIO7 (S3, C3).
 Pins defaultPins();
 HardwareSerial &defaultBus();
 
@@ -41,6 +45,14 @@ bool ping(uint8_t addr, sfbus::Ping &p, int tries = 2);
 // Pings 1..maxAddr (at most MAX_ADDR); calls found() for each module that answers, then re-sends its saved settings if it
 // has reset. Returns how many answered.
 int scan(int maxAddr, void (*found)(uint8_t addr, const sfbus::Ping &p) = nullptr);
+// Auto-addressing (sfbus.h): unplaces every module, raises the ENUM head, then places the modules one at a
+// time in chain order, giving them addresses 1, 2, 3... Rows that start together are placed side by side:
+// position is the module's place in its row (0 = next to the plug). Returns how many were placed, each
+// reported to found(), and re-sends the settings stored for its address. If a position can't be finished
+// (repeated clashes, a module that won't take its address) it stops there rather than misplace anyone.
+using FoundFn = void (*)(uint8_t addr, int position, const sfbus::Ping &p);
+int enumerate(FoundFn found = nullptr);
+
 // Status (or any command answered by a Status). A module reporting F_FRESH has reset to its compiled
 // defaults: its saved settings are pushed back and the status re-read.
 bool getStatus(uint8_t addr, sfbus::Status &s, uint8_t cmd = sfbus::C_STATUS, const void *p = nullptr, uint8_t n = 0);

@@ -38,9 +38,9 @@ void setAbort(AbortFn fn) { shouldAbort = fn ? fn : neverAbort; }
 
 Pins defaultPins() {
 #if CONFIG_IDF_TARGET_ESP32
-  return {16, 17, 4};
+  return {16, 17, 4, 18};
 #else                                          // S3 / C3: the C3 has no UART2; UART0 is left alone
-  return {5, 6, 4};
+  return {5, 6, 4, 7};
 #endif
 }
 
@@ -68,6 +68,7 @@ void begin(HardwareSerial &bus, Pins p) {
   pins = p;
   pinMode(pins.de, OUTPUT);
   digitalWrite(pins.de, LOW);
+  if (pins.enumHead >= 0) { pinMode(pins.enumHead, OUTPUT); digitalWrite(pins.enumHead, LOW); }
   Bus->begin(BAUD, SERIAL_8N1, pins.rx, pins.tx);
   delay(300);
   loadSaved();
@@ -184,6 +185,99 @@ int scan(int maxAddr, void (*found)(uint8_t addr, const Ping &p)) {
       if (found) found(a, p);
       restoreIfReset(a);                       // a module that just powered up gets its settings back now
     }
+  }
+  timeoutCount = 0;
+  return count;
+}
+
+// ---------------------------------------------------------- enumeration ---
+
+static const uint32_t DISCOVER_WINDOW_MS = DISCOVER_SLOTS * SLOT_US / 1000 + 12;
+static const int      MAX_PER_ROUND = 4;       // rows answering one discover together
+
+// Every valid reply to `cmd` from address 0 that arrives within windowMs. sawBytes: anything at all was heard
+// (a clash between two modules in the same slot corrupts both frames, so bytes without a frame = try again).
+static int collect(uint8_t cmd, Frame *out, int max, bool &sawBytes) {
+  int n = 0;
+  sawBytes = false;
+  uint32_t t0 = millis();
+  while (millis() - t0 < DISCOVER_WINDOW_MS) {
+    while (Bus->available()) {
+      sawBytes = true;
+      if (parser.feed(Bus->read(), millis())) {
+        const Frame &f = parser.frame();
+        if (f.addr == ADDR_NEW && f.cmd == (cmd | REPLY) && n < max) out[n++] = f;
+      }
+    }
+    delayMicroseconds(100);
+  }
+  return n;
+}
+
+// Gives each module that answered a discover round the next address. Returns how many took one. lost: an
+// assign went unconfirmed; the module may hold that address anyway, so it can't be handed out again.
+static int placeAll(const Frame *r, int n, uint8_t &next, int position, FoundFn found, bool &lost) {
+  int placed = 0;
+  for (int i = 0; i < n && next <= MAX_ADDR; i++) {
+    Ping p;
+    if (r[i].len < sizeof p) continue;
+    memcpy(&p, r[i].data, sizeof p);
+    AssignMsg m;
+    memcpy(m.uid, p.uid, sizeof m.uid);
+    m.addr = next;
+    Frame a;
+    bool ok = false;
+    for (int t = 0; t < 2 && !ok; t++) {
+      sendFrame(ADDR_NEW, C_ASSIGN, &m, sizeof m);
+      ok = waitReply(next, C_ASSIGN, a);
+    }
+    Ping q;
+    if (!ok) ok = ping(next, q, 2);          // the module may have taken the address and lost only its reply
+    if (!ok) { say("module %08lx-%08lx-%08lx did not confirm address %u\n", (unsigned long)p.uid[0],
+                   (unsigned long)p.uid[1], (unsigned long)p.uid[2], next); lost = true; return placed; }
+    knownAddr[next] = true;
+    placed++;
+    if (found) found(next, position, p);
+    restoreIfReset(next);
+    next++;
+  }
+  return placed;
+}
+
+int enumerate(FoundFn found) {
+  for (int a = 1; a <= MAX_ADDR; a++) knownAddr[a] = false;
+
+  // everyone forgets their address and drops ENUM_OUT; the head drops too so the whole chain is low
+  if (pins.enumHead >= 0) digitalWrite(pins.enumHead, LOW);
+  for (int i = 0; i < 2; i++) { sendFrame(ADDR_BCAST, C_UNASSIGN, nullptr, 0); delay(5); }
+  delay(50);
+  if (pins.enumHead >= 0) digitalWrite(pins.enumHead, HIGH);
+  delay(20);
+
+  // One position at a time: discover rounds repeat until nobody eligible is left (a clash or more than
+  // MAX_PER_ROUND heads leaves someone unplaced, who answers again), then C_ADVANCE moves every row on together.
+  int count = 0;
+  uint8_t next = 1;
+  for (int position = 0; next <= MAX_ADDR; position++) {
+    int placed = 0, silent = 0, clashed = 0, rounds = 0;
+    bool lost = false;
+    while (!lost && next <= MAX_ADDR && silent < 2 && clashed < 6 && rounds++ < 24) {
+      uint8_t seed = (uint8_t)esp_random();
+      sendFrame(ADDR_NEW, C_DISCOVER, &seed, 1);
+      Frame r[MAX_PER_ROUND];
+      bool heard;
+      int n = collect(C_DISCOVER, r, MAX_PER_ROUND, heard);
+      if (n == 0) { if (heard) clashed++; else silent++; continue; }   // nothing = everyone here is placed
+      silent = clashed = 0;
+      placed += placeAll(r, n, next, position, found, lost);
+    }
+    count += placed;
+    if (lost || (silent < 2 && next <= MAX_ADDR)) {   // someone unplaced or unconfirmed: advancing would misplace them
+      say("position %d: some modules could not be placed; stopped here, run enum again\n", position);
+      break;
+    }
+    if (placed == 0) break;                    // nothing at this position = the end of every row
+    for (int i = 0; i < 2; i++) { sendFrame(ADDR_BCAST, C_ADVANCE, nullptr, 0); delay(2); }
   }
   timeoutCount = 0;
   return count;
