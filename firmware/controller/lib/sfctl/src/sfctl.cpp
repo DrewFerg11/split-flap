@@ -214,8 +214,9 @@ static int collect(uint8_t cmd, Frame *out, int max, bool &sawBytes) {
   return n;
 }
 
-// Gives each module that answered a discover round the next address. Returns how many took one.
-static int placeAll(const Frame *r, int n, uint8_t &next, int position, FoundFn found) {
+// Gives each module that answered a discover round the next address. Returns how many took one. lost: an
+// assign went unconfirmed; the module may hold that address anyway, so it can't be handed out again.
+static int placeAll(const Frame *r, int n, uint8_t &next, int position, FoundFn found, bool &lost) {
   int placed = 0;
   for (int i = 0; i < n && next <= MAX_ADDR; i++) {
     Ping p;
@@ -232,8 +233,8 @@ static int placeAll(const Frame *r, int n, uint8_t &next, int position, FoundFn 
     }
     Ping q;
     if (!ok) ok = ping(next, q, 2);          // the module may have taken the address and lost only its reply
-    if (!ok) { say("module %08lx-%08lx-%08lx did not take address %u\n", (unsigned long)p.uid[0],
-                   (unsigned long)p.uid[1], (unsigned long)p.uid[2], next); continue; }
+    if (!ok) { say("module %08lx-%08lx-%08lx did not confirm address %u\n", (unsigned long)p.uid[0],
+                   (unsigned long)p.uid[1], (unsigned long)p.uid[2], next); lost = true; return placed; }
     knownAddr[next] = true;
     placed++;
     if (found) found(next, position, p);
@@ -253,13 +254,14 @@ int enumerate(FoundFn found) {
   if (pins.enumHead >= 0) digitalWrite(pins.enumHead, HIGH);
   delay(20);
 
-  // One position at a time: discover rounds repeat until nobody eligible is left (a clash, a lost assign or more
-  // than MAX_PER_ROUND heads leaves someone unplaced, who answers again), then C_ADVANCE moves every row on together.
+  // One position at a time: discover rounds repeat until nobody eligible is left (a clash or more than
+  // MAX_PER_ROUND heads leaves someone unplaced, who answers again), then C_ADVANCE moves every row on together.
   int count = 0;
   uint8_t next = 1;
   for (int position = 0; next <= MAX_ADDR; position++) {
     int placed = 0, silent = 0, clashed = 0, rounds = 0;
-    while (next <= MAX_ADDR && silent < 2 && clashed < 6 && rounds++ < 24) {
+    bool lost = false;
+    while (!lost && next <= MAX_ADDR && silent < 2 && clashed < 6 && rounds++ < 24) {
       uint8_t seed = (uint8_t)esp_random();
       sendFrame(ADDR_NEW, C_DISCOVER, &seed, 1);
       Frame r[MAX_PER_ROUND];
@@ -267,10 +269,10 @@ int enumerate(FoundFn found) {
       int n = collect(C_DISCOVER, r, MAX_PER_ROUND, heard);
       if (n == 0) { if (heard) clashed++; else silent++; continue; }   // nothing = everyone here is placed
       silent = clashed = 0;
-      placed += placeAll(r, n, next, position, found);
+      placed += placeAll(r, n, next, position, found, lost);
     }
     count += placed;
-    if (silent < 2 && next <= MAX_ADDR) {      // someone is still unplaced here: advancing would shift them a position
+    if (lost || (silent < 2 && next <= MAX_ADDR)) {   // someone unplaced or unconfirmed: advancing would misplace them
       say("position %d: some modules could not be placed; stopped here, run enum again\n", position);
       break;
     }

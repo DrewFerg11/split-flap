@@ -285,7 +285,7 @@
       <tr><th>From</th><th>To</th><th>Note</th></tr>
       <tr><td class="m">PSU +12 V</td><td class="m">Bridge J1 pin 1 (top)</td><td><span class="sw" style="background:var(--w-12)"></span>female Dupont onto the header pin</td></tr>
       <tr><td class="m">PSU −</td><td class="m">Bridge J1 pin 2</td><td><span class="sw" style="background:var(--w-gnd)"></span></td></tr>
-      <tr><td class="m">Bridge J1 pins 3–5</td><td class="m">—</td><td class="dim">nothing: the bus starts at the bridge</td></tr>
+      <tr><td class="m">Bridge J1 pins 3–5</td><td class="m">—</td><td class="dim">nothing: the bus starts at the bridge, and the bridge build holds its ENUM_OUT high, so board 1 starts the ENUM chain with no extra wire</td></tr>
       <tr><td class="m">ESP32 GPIO17 (TX2)</td><td class="m">Bridge J6 pad 7 (RX)</td><td><span class="sw" style="background:var(--w-tx)"></span>3.3 V on both sides</td></tr>
       <tr><td class="m">ESP32 GPIO16 (RX2)</td><td class="m">Bridge J6 pad 6 (TX)</td><td><span class="sw" style="background:var(--w-rx)"></span></td></tr>
       <tr><td class="m">ESP32 GND</td><td class="m">Bridge J6 pad 5 (GND)</td><td><span class="sw" style="background:var(--w-gnd)"></span>also shares ground with the 12 V side</td></tr>
@@ -300,7 +300,7 @@
     <h2>Bring-up order</h2>
     <ol class="steps">
       <li>Bridge board and boards 2 and 3: unpowered shorts check, power-up, flash, LED (DESIGN-1 §14.1 step 2).</li>
-      <li>Flash the bridge with the <code>bridge</code> build (<code>firmware/module</code>) (it copies bytes between J6 serial and RS-485). Flash every module board with the same <code>node</code> build (<code>firmware/module</code>); the controller addresses them over the ENUM chain.</li>
+      <li>Flash the bridge with the <code>bridge</code> build (<code>firmware/module</code>) (it copies bytes between J6 serial and RS-485). Flash every module board with the same <code>node</code> build (<code>firmware/module</code>); the controller addresses them over the ENUM chain (<code>enum</code>, and at boot), board 1 first. The ESP's ENUM pin stays unconnected here.</li>
       <li>Bridge plus board 1 only: <code>1 ping</code>, <code>1 home</code>.</li>
       <li>Add boards 2 and 3: <code>s</code> (status of all), <code>* home</code>, <code>* go 17</code>.</li>
     </ol>

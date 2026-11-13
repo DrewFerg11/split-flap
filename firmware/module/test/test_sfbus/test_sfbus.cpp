@@ -14,6 +14,7 @@ static_assert(sizeof(SetMsg) == 5, "SetMsg wire size");
 static_assert(sizeof(Ping) == 13, "Ping wire size");
 static_assert(sizeof(AssignMsg) == 13, "AssignMsg wire size");
 static_assert(sizeof(AssignMsg) <= MAX_PAYLOAD, "AssignMsg fits one frame");
+static_assert(ADDR_MAX >= 1 && ADDR_MAX < ADDR_BCAST, "assignable addresses stay clear of broadcast");
 static_assert(sizeof(Status) == 26, "Status wire size");
 static_assert(sizeof(Status) <= MAX_PAYLOAD, "Status fits one frame");
 static_assert(K_COUNT * sizeof(int32_t) <= MAX_PAYLOAD, "C_GET settings fit one frame");

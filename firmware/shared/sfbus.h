@@ -47,6 +47,7 @@ enum Cmd : uint8_t {
 // they answer a C_DISCOVER in different slots, chosen from their UID and the seed, and the host retries on a clash.
 // The host sends C_ADVANCE only once every eligible module is placed, so all rows move one position in step.
 const uint8_t  ADDR_NEW    = 0;
+const uint8_t  ADDR_MAX    = 32;     // C_ASSIGN gives 1..ADDR_MAX; a module refuses anything else
 const uint8_t  DISCOVER_SLOTS = 8;
 const uint32_t SLOT_US     = 2000;   // longer than a Ping reply on the wire (19 bytes = 0.8 ms)
 
@@ -101,7 +102,7 @@ struct __attribute__((packed)) Ping {
 
 struct __attribute__((packed)) AssignMsg {
   uint32_t uid[3];     // the module being placed (from its Ping)
-  uint8_t  addr;       // 1..247
+  uint8_t  addr;       // 1..ADDR_MAX
 };
 
 // Which reply slot (0..DISCOVER_SLOTS-1) a module takes for a given seed.

@@ -11,7 +11,7 @@
 
 namespace sfctl {
 
-const uint8_t  MAX_ADDR = 32;     // module addresses 1..MAX_ADDR
+const uint8_t  MAX_ADDR = sfbus::ADDR_MAX;   // module addresses 1..MAX_ADDR
 const uint32_t REPLY_MS = 25;     // wait this long for a reply before a retry
 
 // de: the transceiver's DE+RE pin (unused with the bridge board).

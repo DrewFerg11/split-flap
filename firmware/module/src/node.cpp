@@ -239,7 +239,7 @@ static void handleEnum(const Frame &f) {
     if (f.len < sizeof(AssignMsg)) return;
     AssignMsg m;
     memcpy(&m, f.data, sizeof m);
-    if (memcmp(m.uid, uid, sizeof uid) != 0 || m.addr < 1 || m.addr > 247) return;
+    if (memcmp(m.uid, uid, sizeof uid) != 0 || m.addr < 1 || m.addr > ADDR_MAX) return;
     myAddr = m.addr;
     placedMs = millis();                       // ENUM_OUT stays low until C_ADVANCE
     replyFrom(myAddr, f.cmd, &me, sizeof me);

@@ -42,6 +42,8 @@ header; its `ENUM_IN`), on top of the usual bus wires and a common GND:
 | `s3`, `c3` | GPIO7 |
 
 It is a 3.3 V logic signal: never 12 V. `Pins.enumHead = -1` turns the pin off if you tie pin 5 to 3.3 V instead.
+With the bridge board in front of the row, no ENUM wire is needed: the bridge build holds its ENUM_OUT high,
+so board 1 starts the chain.
 Output lists each module's address and its position in the row (0 = next to the plug).
 
 ## First run, one module
