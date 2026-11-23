@@ -470,6 +470,10 @@ lead) was also only on the old ESP32.
 * ENUM chain: up to six modules in two rows placed in chain order with one shared ENUM wire. A controller flashed
   before the `C_ADVANCE` change places only the first module of a row; reflash the controller with the current build.
 * Faulty board (receives, never transmits): a test build held DE high and toggled DI; A to B stayed at ~2 mV.
+  The test build (`txtest`, an env of `firmware/bringup`) was **not committed**; recreate it if needed: remap PA11 to PA9
+  (`SYSCFG->CFGR1 |= SYSCFG_CFGR1_PA11_RMP`), drive PB3 (DE) high as a plain GPIO output, toggle PA9 (DI) as a GPIO
+  every 3 s, and show DI on the LED (PC15). With 12 V on J1 pins 1-2 only, a working driver reads about +2 to +3 V
+  from A to B (J1 pin 3 to pin 4) with DI high and -2 to -3 V with DI low.
   U3 pin 8 (VCC) 3.3 V, pin 4 (DI) toggling, but **pin 3 (DE) 0.4 V**. U2 pin 20 (PB3) leg 3.3 V, its pad ~0 V:
   **pin 20 was not soldered to its pad**, so R2 held DE low. Reflowed; the board now enumerates and answers.
   Assembly defect on one board, not the design. Picture aids: `images/bringup-bus-driver-test.png`,
