@@ -1,5 +1,6 @@
 """Silkscreen: place every reference where it clears pads, edges, other parts and other text;
-drop footprint silk that overhangs the board edge; add the bottom-side pinout labels.
+drop footprint silk that overhangs the board edge; add the bottom-side pinout labels and the
+top-side board name.
 
     "C:/Program Files/KiCad/10.0/bin/python.exe" silk.py
 
@@ -39,7 +40,8 @@ def hit(a, b):
 def main():
     b = pcbnew.LoadBoard(PCB)
     fps = list(b.GetFootprints())
-    old_labels = [d for d in b.GetDrawings() if d.GetClass() == "PCB_TEXT" and d.GetLayer() == pcbnew.B_SilkS]
+    old_labels = [d for d in b.GetDrawings() if d.GetClass() == "PCB_TEXT"
+                  and d.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS)]
     # footprint silk that overhangs the board edge (the R/A chain connectors) goes -- removed at
     # the very end: SWIG loses its typing for later footprints after a Remove()
     doomed = []
@@ -125,7 +127,7 @@ def main():
             ref.SetVisible(False)
             hidden += 1
 
-    # bottom-side labels (mirrored silk): pinouts and the board name
+    # bottom-side labels (mirrored silk): pinouts
     def label(text, x, y, size=0.8, angle=0, layer=pcbnew.B_SilkS):
         t = pcbnew.PCB_TEXT(b)
         t.SetText(text); t.SetLayer(layer)
@@ -139,13 +141,18 @@ def main():
     for k, name in enumerate(("12V", "GND", "A", "B", "EN")):
         label(name, 5.2, 4.0 + 2.54 * k, 0.8)
         label(name, 26.8, 4.0 + 2.54 * k, 0.8)
-    label("JP1 = 120R TERM, BENCH ONLY", 16.5, 21.4, 0.8)
-    label("SPLIT-FLAP MODULE", 17.0, 24.6, 1.0)
-    label("v0.1 2026-10", 17.0, 26.4, 0.8)
+    label("JP1 = 120R TERM, BUS END ONLY", 16.5, 21.4, 0.8)
     label("3V3 DIO CLK RST GND TX RX", 4.6, 25.6, 0.8, 90)
     label("M1 GND A B 3V3 M2", 4.6, 43.35, 0.8, 90)
-    label("M1 GND A B 3V3 M2", 25.25, 51.6, 0.8)
-    label("OUT GND 12V", 14.0, 51.4, 0.8)
+    # J3 and J5 run along x, so seen from the back their pin 1 is on the right: names read right to left
+    label("M2 3V3 B A GND M1", 25.25, 51.6, 0.8)
+    label("12V GND OUT", 14.0, 51.4, 0.8)
+    # board name, top side: centred between the chain headers, below the M3 screw head;
+    # name in the gap between the +12V (y 4) and A (y 9.08) chain traces, date between A and B (y 11.62).
+    # Width is capped by the header pads (x 3.45 / 28.55), where the fab clips silk
+    label("SPLIT-FLAP MODULE v0.2", W / 2, 5.75, 1.2, layer=pcbnew.F_SilkS)
+    label("by DrewFerg11", W / 2, 7.8, 1.2, layer=pcbnew.F_SilkS)
+    label("2026-11", W / 2, 10.35, 1.2, layer=pcbnew.F_SilkS)
     for fp, g in doomed:
         fp.Remove(g)
     for t in old_labels:                       # a re-run replaces the previous labels

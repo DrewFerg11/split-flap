@@ -11,8 +11,8 @@ prerelease_note = "the first ordered prototype. The silkscreen still reads LEAGU
 "LED, hall sensor, encoder" = "pass"
 "Motor drive" = "pass"
 "RS-485 (bridge + board #1, board #2)" = "pass"
-"Bus enumeration (ENUM chain)" = "pending"
-"Motor current sense (ISEN)" = "pending"
+"Bus enumeration (ENUM chain)" = "pass"
+"Motor current sense (ISEN)" = "pass"
 +++
 
 ## Summary
@@ -24,7 +24,8 @@ and pinout are the same as on the SplitFlap v5.1 board, so existing sensor leads
 
 ## Known issues
 
-- One of the ten boards receives on RS-485 but its replies never reach the bus; a U2
-  (transceiver) joint or U2 itself is suspected. See DESIGN-1 section 14.
-- ENUM chain and ISEN aren't tested yet.
+- One of the ten boards received on RS-485 but never transmitted: U2 pin 20 (which drives the transceiver's
+  DE) was not soldered to its pad. Reflowed; it works. See DESIGN-1 section 14.
+- The bottom-side pin names on J3 (motor) and J5 (hall) are mirrored; count from the square
+  pin-1 pad instead. The copper is correct. Fixed in the next revision.
 - Silkscreen reads `LEAGUE-TABLE MODULE`; renamed in the next revision.

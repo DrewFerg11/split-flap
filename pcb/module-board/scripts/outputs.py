@@ -22,6 +22,8 @@ import jlc_cpl                # JLC rotation corrections + THT centring (see jlc
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 NAME = "split-flap-module-board"
+REV = "v0.2"                          # fab file names carry the revision; the ordered v0.1 files keep theirs
+OUT = NAME + "-" + REV
 PROJ = os.path.dirname(HERE)          # module-board/: KiCad project + fab/ (scripts live in scripts/)
 PCB = os.path.join(PROJ, NAME + ".kicad_pcb")
 SCH = os.path.join(PROJ, NAME + ".kicad_sch")
@@ -45,7 +47,7 @@ run("pcb", "export", "gerbers", "--output", GERB + os.sep,
     "--use-drill-file-origin", "--subtract-soldermask", PCB)
 run("pcb", "export", "drill", "--output", GERB + os.sep, "--format", "excellon",
     "--excellon-units", "mm", "--drill-origin", "plot", "--generate-map", "--map-format", "gerberx2", PCB)
-zpath = os.path.join(FAB, NAME + "-gerbers.zip")
+zpath = os.path.join(FAB, OUT + "-gerbers.zip")
 with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
     for f in sorted(os.listdir(GERB)):
         z.write(os.path.join(GERB, f), f)
@@ -85,20 +87,20 @@ def natural(r):
     return (m.group(1), int(m.group(2))) if m else (r, 0)
 
 
-with open(os.path.join(FAB, NAME + "-bom-jlc.csv"), "w", newline="", encoding="utf-8") as f:
+with open(os.path.join(FAB, OUT + "-bom-jlc.csv"), "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     w.writerow(["Comment", "Designator", "Footprint", "LCSC"])
     for (lcsc, fpn), items in sorted(groups.items(), key=lambda kv: natural(sorted(r for r, _ in kv[1])[0])):
         refs = sorted((r for r, _ in items), key=natural)
         val = min((v for _, v in items), key=len)          # shortest label, e.g. "100nF" not "C_BS 100nF"
         w.writerow([val, ",".join(refs), fpn, lcsc])
-with open(os.path.join(FAB, NAME + "-cpl-jlc.csv"), "w", newline="", encoding="utf-8") as f:
+with open(os.path.join(FAB, OUT + "-cpl-jlc.csv"), "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
     for row in sorted(cpl, key=lambda r: natural(r[0])):
         w.writerow([row[0], f"{row[1]}mm", f"{row[2]}mm", row[3], row[4]])
 
-with open(os.path.join(FAB, NAME + "-hand-solder.csv"), "w", newline="", encoding="utf-8") as f:
+with open(os.path.join(FAB, OUT + "-hand-solder.csv"), "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     w.writerow(["Designator", "Value", "LCSC", "Per board", "Note"])
     notes = {"C1": "polarized: stripe = minus; board silk marks +",
@@ -109,16 +111,16 @@ with open(os.path.join(FAB, NAME + "-hand-solder.csv"), "w", newline="", encodin
         w.writerow([ref, val, lcsc, 1, notes.get(ref, "")])
 
 # ---------------------------------------------------------------- 3D, renders, PDFs
-run("pcb", "export", "step", "--output", os.path.join(FAB, NAME + ".step"), "--subst-models",
+run("pcb", "export", "step", "--output", os.path.join(FAB, OUT + ".step"), "--subst-models",
     "--no-dnp", "--force", PCB)   # J4/J6/JP1 are bare pads: no headers in the fit-check model
 IMG = os.path.join(FAB, "images")
 os.makedirs(IMG, exist_ok=True)
 for side in ("top", "bottom"):
-    run("pcb", "render", "--output", os.path.join(IMG, f"{NAME}-{side}.png"), "--side", side,   # zoom out: the J2 socket and J1 pins overhang the outline
+    run("pcb", "render", "--output", os.path.join(IMG, f"{OUT}-{side}.png"), "--side", side,   # zoom out: the J2 socket and J1 pins overhang the outline
         "--width", "1500", "--height", "1800", "--zoom", "0.8", "--quality", "high", "--background", "opaque", PCB)
-run("pcb", "render", "--output", os.path.join(IMG, f"{NAME}-3d.png"), "--side", "top", "--rotate", "-35,0,25",
+run("pcb", "render", "--output", os.path.join(IMG, f"{OUT}-3d.png"), "--side", "top", "--rotate", "-35,0,25",
     "--perspective", "--width", "1600", "--height", "1600", "--quality", "high", "--background", "opaque", PCB)
-run("pcb", "export", "pdf", "--output", os.path.join(FAB, NAME + "-layers.pdf"), "--mode-multipage",
+run("pcb", "export", "pdf", "--output", os.path.join(FAB, OUT + "-layers.pdf"), "--mode-multipage",
     "--layers", "F.Cu,B.Cu,F.Silkscreen,B.Silkscreen,F.Fab,Edge.Cuts", "--common-layers", "Edge.Cuts",
     "--include-border-title", PCB)
 run("sch", "export", "pdf", "--output", os.path.join(PROJ, NAME + "-schematic.pdf"), SCH)
