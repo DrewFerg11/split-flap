@@ -82,7 +82,7 @@ ordered or brought up as of 2026-10-14, so its choices are reviewed but not yet 
 | Baud | start at 250 kbps; 500 k–1 M only if needed |
 | Topology | trunk + 20 row branches; A/B pass straight through each board |
 | **Stubs** | each row is a stub of ~0.3 m (name ~172 + 2 × 43 mm + its plug). At 250 kbps that is well inside the usual "stub ≪ bit time" limit. Revisit if baud goes up |
-| Termination | 120 Ω **at the two ends of the trunk only** (on the trunk / host side), not on modules. A `JP_TERM` jumper stays on the board for bench use (one module = both ends) |
+| Termination | 120 Ω **at the two ends of the trunk only**: at the host, and at the far end of the rail by bridging JP1 on that row's trunk-side module (one JP1 in the whole display). On the bench JP1 terminates a single module (one module = both ends). Silk: "JP1 = 120R TERM, BUS END ONLY" (v0.2) |
 | Fail-safe bias | once, at the host |
 | Protocol | address byte, command, payload, CRC-16; broadcast address; group addresses (row, all digits, all names) |
 
@@ -108,7 +108,7 @@ no board change either way.
 | Load | Current | Source |
 |---|---|---|
 | N20 no-load / stall | 0.1 A / ≤ 1.1 A | Waveshare |
-| N20 moving the drum | ~0.2–0.3 A | **estimate — measure on the bench** |
+| N20 moving the drum | ~30 mA in ramped moves, ~75 mA at full duty (33 mm drum; 200 mm ~1.5× at full duty) | **measured 2026-11-22:** [current-measurements.md](current-measurements.md) |
 | Logic (MCU, transceiver TX, encoder, LED) | ≤ 60 mA at 3.3 V | datasheets; transceiver driving a terminated bus dominates |
 
 ### 6.2 Through the chain
@@ -132,7 +132,7 @@ Trunk wiring and per-row fusing are a trunk design question, not this board.
 |---|---|
 | **F1** BSMD1812-200-33V polyfuse (2 A hold / 4 A trip) `C7433877` | short circuit on the local branch only (not the pass-through) |
 | **Q1** AO3401A P-FET `C15127` (Basic) + **DZ1** MM1Z10 `C107591` + 100 k | reverse-polarity ideal diode. **Drain to F1, source to +12V_LOCAL** (7SEG drew it backwards first) |
-| **D2** SMAJ18A TVS `C908771` | hot-plug surge clamp on +12V_LOCAL |
+| **D1** SMAJ18A TVS `C908771` | hot-plug surge clamp on +12V_LOCAL |
 | Bulk cap | C1 100 µF 35 V 6.3 × 5.4 electrolytic on +12V_LOCAL (motor + hot-plug) |
 
 The pass-through +12 V is not fused or switched on this board; a mid-row board plugged in reversed
@@ -277,13 +277,13 @@ LCSC data from the local JLC snapshot (2026-08-03). **Re-check stock live before
 
 | Ref | Part | LCSC | Tier | ~$ |
 |---|---|---|---|---|
-| U1 | STM32G031F8P6 | C529334 | Ext | 1.24 |
-| U2 | GM3085E | C269864 | Ext | 0.12 |
-| U3 | HT7533-1 | C14289 | **Basic** | 0.13 |
+| U1 | HT7533-1 | C14289 | **Basic** | 0.13 |
+| U2 | STM32G031F8P6 | C529334 | Ext | 1.24 |
+| U3 | GM3085E | C269864 | Ext | 0.12 |
 | U4 | DRV8870DDAR | C86590 | Ext | 0.41 |
 | Q1 | AO3401A | C15127 | **Basic** | 0.07 |
 | DZ1 | MM1Z10 | C107591 | Ext | 0.02 |
-| D2 | SMAJ18A | C908771 | Ext | 0.03 |
+| D1 | SMAJ18A | C908771 | Ext | 0.03 |
 | F1 | BSMD1812-200-33V | C7433877 | Ext | 0.16 |
 | J1 / J2 | 5-pin right-angle header / socket | C492413 / C2897387 | Ext | 0.05 / 0.15 |
 | J_MOT, J_HALL | ZH 6 / PH 3 | C157984 / C2320 | Ext | 0.15 / 0.04 |
@@ -334,7 +334,7 @@ Decisions made while drawing:
 | Debug | J6 7-pad header, DNP: +3V3 · SWDIO · SWCLK · NRST · GND · TX · RX |
 | Motor pads | J4 6 × 2.54 mm pads (DNP) beside J3, same nets |
 | Test points | TP1–TP6: +12V_LOCAL, +3V3, A, B, ISEN_ADC, GND |
-| JP1 | termination jumper, DNP (hand-fit for the bench) |
+| JP1 | termination jumper, DNP (hand-fit on the bench, and on the one module at the far end of the rail) |
 | TVS | D1 SMAJ18A `C908771` (52 k in stock; 7SEG's `C571369` had 5 k) |
 
 ## 13b. Layout (step 4)
@@ -393,7 +393,7 @@ renders and review images in `images/`, ERC/DRC reports, `netlist.txt`.
 | 1 | Final enclosure back: rails (top/bottom edges, 1.5 mm kept clear), back wall, pillar positions, wall windows for the chain connectors (~10.8 mm between boards) | **fit-check the STEP in Fusion before ordering** |
 | 2 | ~~Waveshare lead~~ **answered:** bare at the far end → ZH header + fallback pads, double-ended ZH cable | — |
 | 2a | Motor ZH pin 1: **set to M1** (web listings + Drew's guess, not confirmed by a datasheet). Meter-check: the encoder's GND pin should ring through to the motor's encoder-board ground | bring-up |
-| 3 | N20 running current on the real drum (bench) | power numbers only |
+| 3 | N20 running current on the real drum: **measured 2026-11-22**, see [current-measurements.md](current-measurements.md) | — |
 | 4 | Stock / second source for the 5-pin right-angle female socket | BOM |
 | 5 | ~~THT connectors~~ **decided 2026-10-15 (first JLC upload):** Drew hand-solders **C1** only (SMD electrolytic is Standard-PCBA-only at JLC: +$25 and a forced 70 × 70 mm panel); it's left out of the JLC BOM/CPL and listed in `fab/*-hand-solder.csv`. JLC places every connector; J1, J2, J5 landed rotated 90° in the first preview and are fixed by hand in the preview | — |
 | 6 | Trunk design (loom / PCB rail / bus bars), row plug, termination location | separate design: [`hardware/rail`](../../../hardware/rail/) |
@@ -402,6 +402,9 @@ renders and review images in `images/`, ERC/DRC reports, `netlist.txt`.
 | 9 | B.Cu ground plane is broken into a few islands by bottom-side signal hops (all stitched to the main plane; DRC clean). Acceptable for these slow signals; a v0.2 could keep B.Cu solid | v0.2 |
 | 10 | 5 of 51 silkscreen references sit a little away from their parts (no room); `fab/images/*-assembly-top.png` shows every reference exactly on its part | none |
 | 11 | Socket `C2897387` stock (2.7 k in the August snapshot) and every Extended part: re-check live stock at order | order |
+| 12 | **Possible enhancement, deferred from v0.2 (2026-11-13):** a second status LED on the back, visible through the enclosure's header window while modules are joined (not once wall-mounted). Driven from PC15 with D2, so no firmware change. Deferred because it would be the first bottom-side assembled part (two-sided JLC assembly: extra setup fee + second stencil) and the first copper change to a working board. Meanwhile `id` can move the flaps to identify a module from the front | none |
+| 13 | **Reverse-polarity test (E1) not yet done.** Q1 conducts in normal use (every board runs); its blocking of a reversed J1 plug is untested. Test on one board with a current-limited supply, or with 1 kΩ in series with + and the meter across it (~0 V = blocked) | when a bench supply is available |
+| 14 | **Bottom silkscreen on v0.1: J3 and J5 pin names are mirrored** (pin 1 is on the right seen from the back). Copper is correct (J3 pin n = J4 pad n, checked by continuity 2026-11-22). Fixed in v0.2: J3 `M2 3V3 B A GND M1`, J5 `12V GND OUT` | fixed in v0.2 |
 
 ## 14. Bring-up log
 
@@ -449,8 +452,9 @@ Drive changed to slow decay (drive/brake PWM) to match the bench TB6612; `dir` d
 `cal` measured **10855 counts/rev** with the "78 RPM" motor (same as the bench motor's 10856, so that one was a
 ~1:388 gearbox too); revs agree within 6 counts. A second board flashed `node2` (name module, uid 00390029-…) also answers.
 **Faulty board:** the first board flashed as `node2` receives (193 bytes, 0 CRC errors read over SWD) and its PB3 (DE)
-and PA9 (TX) toggle correctly, but its replies never reach the bus: suspect a U2 joint (DE pin 3 / DI pin 4) or U2 itself.
+and PA9 (TX) toggle correctly, but its replies never reach the bus: suspect a U3 (transceiver) joint (DE pin 3 / DI pin 4) or U3 itself.
 Set aside, not yet metered (`images/bringup-bus-ab-probe.png` shows the A/B probe points for the forced-driver test).
+**Resolved 2026-11-22:** see below.
 
 **2026-11-04: host moved to an ESP32-C3 Super Mini** (`ltm-host` env `c3`, MAX3485 5-pin module, wiring page board switch).
 Board 1 turned the **wrong way** again: its flashed build predates the `dir 0` default, and the fix had only ever lived in the
@@ -458,3 +462,21 @@ old ESP32's saved settings (pushed back on every module reset). The C3 starts em
 compiled `dir 1`. Source default is `dir 0` (`ltm_proto.h`); **reflash board 1 (and any board flashed before 2026-10-29
 20:37) with the current build** so the direction no longer depends on which host is attached. Calibration (cpr, foff,
 lead) was also only on the old ESP32.
+
+**2026-11-22: current measured, ISEN and ENUM proven, faulty board fixed.**
+* Supply current per module, one to six modules (two rows of 33 mm + 200 mm): [current-measurements.md](current-measurements.md).
+  The 5-pin chain is enough; no 7-pin change (open item 3 closed). ISEN tracks the meter; the firmware had read it
+  through the wrong pin number and always reported 0 mA (`analogRead(PA4)`, fixed in `firmware/module`).
+* ENUM chain: up to six modules in two rows placed in chain order with one shared ENUM wire. A controller flashed
+  before the `C_ADVANCE` change places only the first module of a row; reflash the controller with the current build.
+* Faulty board (receives, never transmits): a test build held DE high and toggled DI; A to B stayed at ~2 mV.
+  The test build (`txtest`, an env of `firmware/bringup`) was **not committed**; recreate it if needed: remap PA11 to PA9
+  (`SYSCFG->CFGR1 |= SYSCFG_CFGR1_PA11_RMP`), drive PB3 (DE) high as a plain GPIO output, toggle PA9 (DI) as a GPIO
+  every 3 s, and show DI on the LED (PC15). With 12 V on J1 pins 1-2 only, a working driver reads about +2 to +3 V
+  from A to B (J1 pin 3 to pin 4) with DI high and -2 to -3 V with DI low.
+  U3 pin 8 (VCC) 3.3 V, pin 4 (DI) toggling, but **pin 3 (DE) 0.4 V**. U2 pin 20 (PB3) leg 3.3 V, its pad ~0 V:
+  **pin 20 was not soldered to its pad**, so R2 held DE low. Reflowed; the board now enumerates and answers.
+  Assembly defect on one board, not the design. Picture aids: `images/bringup-bus-driver-test.png`,
+  `images/bringup-u3-pin-check.png`, `images/bringup-u2-pin20.png`. Worth a look at U2/U3 under a magnifier on new boards.
+* J3 continuity: J3 pin n rings to J4 pad n (open item 14: the v0.1 bottom labels on J3/J5 are mirrored). J3 with a
+  ZH cable and a motor still to run.

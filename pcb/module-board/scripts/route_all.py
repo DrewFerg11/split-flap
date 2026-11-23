@@ -31,6 +31,6 @@ step("width audit", [KPY, "widths.py"])
 step("DRC", [CLI, "pcb", "drc", "--severity-all", "--schematic-parity", "-o",
              os.path.join(PROJ, "fab", "drc-report.txt"), PCB], ok_fail=True)
 step("fab outputs", [KPY, "outputs.py"])
-IMG = os.path.join(PROJ, "fab", "images", "split-flap-module-board-")
+IMG = os.path.join(PROJ, "fab", "images", "split-flap-module-board-v0.2-")
 step("review image: copper + exact references", [sys.executable, "snap.py", IMG + "assembly-top.png", "F.Cu,F.Fab,Edge.Cuts", "-7,0,34,54", "760"])
 step("review image: bottom", [sys.executable, "snap.py", IMG + "copper-bottom.png", "B.Cu,B.Silkscreen,Edge.Cuts", "-7,0,34,54", "760"])
