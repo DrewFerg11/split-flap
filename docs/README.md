@@ -33,7 +33,7 @@ deployment paths. Use `npm run preview` to inspect the exported site.
   Use site-root paths there (such as `/demo/premier-league/`); raw HTML
   anchors and custom Astro components need `import.meta.env.BASE_URL`.
 - The homepage is `src/content/docs/index.mdx`; its image is the project's own
-  KiCad render at `../pcb/module-board/fab/images/league-table-module-v0.1-3d.png`.
+  KiCad render at `../pcb/module-board/fab/images/split-flap-module-board-v0.2-3d.png`.
   The workflow watches that source image too. Theme adjustments live in `src/styles/extra.css`.
   Prefer Starlight components to custom replacements.
 - Add demos under `public/demo/<slug>/` with a `manifest.json` (title and

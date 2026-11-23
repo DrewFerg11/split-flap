@@ -1,12 +1,14 @@
-# Split-flap module board v0.1
+# Split-flap module board v0.2
+
+**Status (2026-11-22): v0.2 ready to order.** Silkscreen-only changes from v0.1 (board name, JP1 label, J3/J5 bottom pin names); the copper is the ten v0.1 boards' copper, now fully brought up (ENUM, ISEN, current measured: [`design/current-measurements.md`](design/current-measurements.md)). v0.1's ordered files are on its release, `pcb/module-board/v0.1`.
 
 **Status (2026-10-27): board #1 brought up** (power, SWD flash, LED, hall, encoder, motor drive all pass; see `design/DESIGN-1.md` section 14 and [`firmware/bringup`](../../firmware/bringup/)). **Next:** other 9 boards, ISEN, RS-485 + enumeration firmware.
 
-**Status (2026-10-19): ordered.** ERC 0, DRC 0 errors / 0 unconnected; the files in `fab/` are what was ordered.
+**Status (2026-10-19): v0.1 ordered.** ERC 0, DRC 0 errors / 0 unconnected.
 
 **Ordered 2026-10-19:** JLCPCB, 10 boards, Economic PCBA top side (green, 1.6 mm, HASL), est. ship 2026-10-23; C1 hand-solder caps from LCSC (20× C3151830, separate shipment).
 
-![top](fab/images/league-table-module-v0.1-top.png)
+![top](fab/images/split-flap-module-board-v0.2-top.png)
 Start with [`design/DESIGN-1.md`](design/DESIGN-1.md).
 
 One small board per split-flap module (digit and name) of the [Premier League display](../../applications/premier-league/README.md): STM32G031 + DRV8870 driving one 12 V

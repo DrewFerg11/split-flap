@@ -16,19 +16,19 @@ path = "fab/drc-report.txt"
 
 # ---- images (renders, then real photos when there are some: design/images/photo-*.jpg)
 [[images]]
-path = "fab/images/league-table-module-v0.1-3d.png"
+path = "fab/images/split-flap-module-board-v0.2-3d.png"
 caption = "3D render"
 [[images]]
-path = "fab/images/league-table-module-v0.1-top.png"
+path = "fab/images/split-flap-module-board-v0.2-top.png"
 caption = "Top"
 [[images]]
-path = "fab/images/league-table-module-v0.1-bottom.png"
+path = "fab/images/split-flap-module-board-v0.2-bottom.png"
 caption = "Bottom"
 [[images]]
-path = "fab/images/league-table-module-v0.1-assembly-top.png"
+path = "fab/images/split-flap-module-board-v0.2-assembly-top.png"
 caption = "Top copper + references"
 [[images]]
-path = "fab/images/league-table-module-v0.1-copper-bottom.png"
+path = "fab/images/split-flap-module-board-v0.2-copper-bottom.png"
 caption = "Bottom copper (ground plane)"
 [[images]]
 path = "design/images/bringup-meter-points.png"
@@ -36,19 +36,19 @@ caption = "Power, debug and motor pinout"
 
 # ---- release files (committed; renamed on upload)
 [[assets]]
-path = "fab/league-table-module-v0.1-gerbers.zip"
+path = "fab/split-flap-module-board-v0.2-gerbers.zip"
 name = "gerbers.zip"
 description = "**Upload this to JLCPCB**: Gerbers + Excellon drill"
 [[assets]]
-path = "fab/league-table-module-v0.1-bom-jlc.csv"
+path = "fab/split-flap-module-board-v0.2-bom-jlc.csv"
 name = "bom-jlc.csv"
 description = "JLC assembly BOM (LCSC part numbers)"
 [[assets]]
-path = "fab/league-table-module-v0.1-cpl-jlc.csv"
+path = "fab/split-flap-module-board-v0.2-cpl-jlc.csv"
 name = "cpl-jlc.csv"
 description = "JLC placement file (rotations corrected)"
 [[assets]]
-path = "fab/league-table-module-v0.1-hand-solder.csv"
+path = "fab/split-flap-module-board-v0.2-hand-solder.csv"
 name = "hand-solder.csv"
 description = "Parts JLC doesn't place: order from LCSC, solder yourself"
 [[assets]]
@@ -60,11 +60,11 @@ path = "split-flap-module-board-schematic.pdf"
 name = "schematic.pdf"
 description = "Schematic"
 [[assets]]
-path = "fab/league-table-module-v0.1-layers.pdf"
+path = "fab/split-flap-module-board-v0.2-layers.pdf"
 name = "layers.pdf"
 description = "Copper, silk and fab layers, one per page"
 [[assets]]
-path = "fab/league-table-module-v0.1.step"
+path = "fab/split-flap-module-board-v0.2.step"
 name = "board.step"
 description = "3D model for enclosure fit checks"
 
